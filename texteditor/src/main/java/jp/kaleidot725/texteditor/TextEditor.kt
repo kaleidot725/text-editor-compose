@@ -1,97 +1,55 @@
 package jp.kaleidot725.texteditor
 
-import android.graphics.Rect
-import android.view.View
-import android.view.ViewTreeObserver
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.focus.onFocusEvent
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.focus.FocusRequester
 
 @Composable
 fun TextEditor(modifier: Modifier = Modifier) {
-    val textEditorState by rememberTextEditorState("")
+    val linesState by rememberTextLinesState(DemoText)
     var selectedIndex by remember { mutableStateOf(0) }
 
-    Column(modifier = modifier) {
-        textEditorState.lines.forEachIndexed { index, text ->
+    LazyColumn(modifier = modifier) {
+        itemsIndexed(items = linesState.value) { index, text ->
+            val focusRequester by remember { mutableStateOf(FocusRequester()) }
+            val isSelected by remember(selectedIndex) { derivedStateOf { selectedIndex == index } }
+
+            LaunchedEffect(isSelected) {
+                if (isSelected) focusRequester.requestFocus()
+            }
+
             TextLine(
                 number = index + 1,
                 text = text,
-                isSelected = selectedIndex == index,
+                isSelected = isSelected,
+                focusRequester = focusRequester,
                 onChangedText = { newText ->
-                    textEditorState.updateLineText(index, newText)
+                    linesState.updateLineText(index, newText)
                 },
                 onInputNewLine = {
-                    selectedIndex = textEditorState.selectedIndex.value + 1
-                    textEditorState.inputNewLine(index = index)
+                    selectedIndex += 1
+                    linesState.inputNewLineKey(index = index)
                 },
                 onInputBackKey = {
-                    textEditorState.inputBackKey(
+                    linesState.inputBackKey(
                         index = index,
-                        onRemovedLine = { selectedIndex = textEditorState.selectedIndex.value - 1 }
+                        onRemovedLine = { selectedIndex -= 1 }
                     )
                 },
-                onFocus = { textEditorState.selectLine(index) },
+                onFocus = {
+                    selectedIndex = index
+                },
             )
-        }
-    }
-}
-
-fun View.isKeyboardOpen(): Boolean {
-    val rect = Rect()
-    getWindowVisibleDisplayFrame(rect);
-    val screenHeight = rootView.height
-    val keypadHeight = screenHeight - rect.bottom;
-    return keypadHeight > screenHeight * 0.15
-}
-
-@Composable
-fun rememberIsKeyboardOpen(): State<Boolean> {
-    val view = LocalView.current
-
-    return produceState(initialValue = view.isKeyboardOpen()) {
-        val viewTreeObserver = view.viewTreeObserver
-        val listener = ViewTreeObserver.OnGlobalLayoutListener { value = view.isKeyboardOpen() }
-        viewTreeObserver.addOnGlobalLayoutListener(listener)
-
-        awaitDispose { viewTreeObserver.removeOnGlobalLayoutListener(listener) }
-    }
-}
-
-fun Modifier.clearFocusOnKeyboardDismiss(): Modifier = composed {
-
-    var isFocused by remember { mutableStateOf(false) }
-    var keyboardAppearedSinceLastFocused by remember { mutableStateOf(false) }
-
-    if (isFocused) {
-        val isKeyboardOpen by rememberIsKeyboardOpen()
-
-        val focusManager = LocalFocusManager.current
-        LaunchedEffect(isKeyboardOpen) {
-            if (isKeyboardOpen) {
-                keyboardAppearedSinceLastFocused = true
-            } else if (keyboardAppearedSinceLastFocused) {
-                focusManager.clearFocus()
-            }
-        }
-    }
-    onFocusEvent {
-        if (isFocused != it.isFocused) {
-            isFocused = it.isFocused
-            if (isFocused) {
-                keyboardAppearedSinceLastFocused = false
-            }
         }
     }
 }

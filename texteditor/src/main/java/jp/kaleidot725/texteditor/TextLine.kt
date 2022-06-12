@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -33,18 +31,13 @@ fun TextLine(
     number: Int,
     text: String,
     isSelected: Boolean,
+    focusRequester: FocusRequester,
     onChangedText: (String) -> Unit,
     onInputNewLine: () -> Unit,
     onInputBackKey: () -> Unit,
     onFocus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(isSelected) {
-        if (isSelected) focusRequester.requestFocus()
-    }
-
     Row(modifier = modifier.background(if (isSelected) Color.Gray else Color.White)) {
         Text(
             text = number.toString().padStart(2, '0'),
@@ -84,7 +77,6 @@ fun TextLine(
                         false
                     }
                 }
-                .clearFocusOnKeyboardDismiss()
         )
     }
 }

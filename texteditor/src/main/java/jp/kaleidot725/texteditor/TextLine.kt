@@ -1,5 +1,6 @@
 package jp.kaleidot725.texteditor
 
+import android.view.KeyEvent.KEYCODE_DEL
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +19,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
@@ -38,10 +38,12 @@ fun TextLine(
     onFocus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier.background(if (isSelected) Color.Gray else Color.White)) {
+    Row(
+        modifier = modifier
+            .background(if (isSelected) Color(0x80014900) else Color.White)
+    ) {
         Text(
             text = number.toString().padStart(2, '0'),
-            color = Color(0xFF014900),
             modifier = Modifier
                 .wrapContentWidth()
                 .align(Alignment.Top)
@@ -66,10 +68,10 @@ fun TextLine(
                 .wrapContentHeight()
                 .align(Alignment.Top)
                 .focusRequester(focusRequester)
-                .onFocusChanged { if (it.isFocused) onFocus() }
-                .onKeyEvent { event: KeyEvent ->
+                .onFocusChanged { onFocus() }
+                .onKeyEvent { event ->
                     val isKeyUp = event.type == KeyEventType.KeyUp
-                    val isBackKey = (event.key == Key.Backspace) || (event.key == Key.Delete)
+                    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
                     if (isKeyUp && isBackKey) {
                         onInputBackKey()
                         true

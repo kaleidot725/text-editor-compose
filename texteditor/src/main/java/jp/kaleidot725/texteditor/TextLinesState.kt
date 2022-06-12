@@ -22,10 +22,16 @@ data class TextEditorState(
     }
 
     fun inputBackKey(index: Int, onRemovedLine: () -> Unit) {
-        if(value.lastIndex != 0 && value[index].isEmpty()) {
-            onRemovedLine()
-            _lines.removeAt(index)
+        if(value.lastIndex == 0) return
+
+        if (value[index].isNotEmpty()) {
+            val newValue = _lines[index - 1] + _lines[index]
+            _lines.removeAt(index -1)
+            _lines.add(index - 1, newValue)
         }
+
+        onRemovedLine()
+        _lines.removeAt(index)
     }
 }
 

@@ -34,8 +34,8 @@ fun TextLine(
     text: String,
     isSelected: Boolean,
     onChangedText: (String) -> Unit,
-    onNextLine: () -> Unit,
-    onRemovedLine: () -> Unit,
+    onInputNewLine: () -> Unit,
+    onInputBackKey: () -> Unit,
     onFocus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -61,7 +61,7 @@ fun TextLine(
             onValueChange = {
                 when {
                     it.contains("\n") -> {
-                        onNextLine()
+                        onInputNewLine()
                     }
                     else -> {
                         onChangedText(it)
@@ -77,13 +77,14 @@ fun TextLine(
                 .onKeyEvent { event: KeyEvent ->
                     val isKeyUp = event.type == KeyEventType.KeyUp
                     val isBackKey = (event.key == Key.Backspace) || (event.key == Key.Delete)
-                    if (isKeyUp && isBackKey && text.isEmpty()) {
-                        onRemovedLine()
+                    if (isKeyUp && isBackKey) {
+                        onInputBackKey()
                         true
                     } else {
                         false
                     }
                 }
+                .clearFocusOnKeyboardDismiss()
         )
     }
 }

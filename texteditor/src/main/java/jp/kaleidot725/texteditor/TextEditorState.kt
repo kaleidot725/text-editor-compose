@@ -5,7 +5,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 
 data class TextEditorState(
@@ -17,15 +16,15 @@ data class TextEditorState(
     val text get() = lines.fold("") { text, line -> text + "$line\n" }
     val selectedIndex: State<Int> get() = _selectedIndex
 
-    fun addNewline() {
-        if (_selectedIndex.value == lines.lastIndex) _lines.add("")
-        _selectedIndex.value = _selectedIndex.value + 1
+    fun inputNewLine(index: Int) {
+        if (lines.lastIndex == index) _lines.add("")
     }
 
-    fun removeLine(index: Int) {
-        if(lines.lastIndex == 0) return
-        _lines.removeAt(index)
-        _selectedIndex.value = _selectedIndex.value - 1
+    fun inputBackKey(index: Int, onRemovedLine: () -> Unit) {
+        if(lines.lastIndex != 0 && lines[index].isEmpty()) {
+            onRemovedLine()
+            _lines.removeAt(index)
+        }
     }
 
     fun updateLineText(index: Int, lineText: String) {

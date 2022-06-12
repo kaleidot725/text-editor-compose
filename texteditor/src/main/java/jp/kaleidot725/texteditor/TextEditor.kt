@@ -1,17 +1,25 @@
 package jp.kaleidot725.texteditor
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun TextEditor(modifier: Modifier = Modifier) {
+    val textEditorState by rememberTextEditorState("")
+
     Column(modifier = modifier) {
-        (0L..100L).forEach {
-            TextLine(number = it, text = "text$it", onChangedText = {}, modifier = Modifier.height(22.dp))
+        textEditorState.lines.forEachIndexed { index, text ->
+            TextLine(
+                number = index + 1,
+                text = text,
+                isSelected = textEditorState.selectedIndex.value == index,
+                onChangedText = { newText -> textEditorState.updateLineText(index, newText) },
+                onNextLine = { textEditorState.addNewline() },
+                onRemovedLine = { textEditorState.removeLine(index) },
+                onFocus = { textEditorState.selectLine(index) }
+            )
         }
     }
 }

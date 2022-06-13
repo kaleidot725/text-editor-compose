@@ -18,22 +18,20 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TextLine(
     number: Int,
-    text: String,
+    textFieldValue: TextFieldValue,
     isSelected: Boolean,
     focusRequester: FocusRequester,
-    onChangedText: (String) -> Unit,
-    onInputNewLine: () -> Unit,
+    onChangedText: (TextFieldValue) -> Unit,
     onInputBackKey: () -> Unit,
     onFocus: () -> Unit,
     modifier: Modifier = Modifier
@@ -52,17 +50,8 @@ fun TextLine(
         Spacer(modifier = Modifier.width(4.dp))
 
         BasicTextField(
-            value = text,
-            onValueChange = {
-                when {
-                    it.contains("\n") -> {
-                        onInputNewLine()
-                    }
-                    else -> {
-                        onChangedText(it)
-                    }
-                }
-            },
+            value = textFieldValue,
+            onValueChange = { onChangedText(it) },
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()

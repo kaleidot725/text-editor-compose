@@ -4,6 +4,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('/Users/katz/Documents/Key/sample')
+            storePassword 'sample'
+            keyAlias 'sample'
+            keyPassword 'sample'
+        }
+    }
     namespace 'jp.kaleidot725.sample'
     compileSdk 32
 
@@ -24,6 +32,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {

@@ -1,6 +1,6 @@
 package jp.kaleidot725.texteditor
 
-import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun TextEditor(modifier: Modifier = Modifier) {
@@ -17,32 +18,28 @@ fun TextEditor(modifier: Modifier = Modifier) {
 
     LazyColumn(modifier = modifier) {
         itemsIndexed(
-            items = linesState.fields,
-            key = { index, _ -> "$index" }
+            items = linesState.fields
         ) { index, textFieldState ->
             val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
             LaunchedEffect(textFieldState.isSelected) {
-                if (textFieldState.isSelected) focusRequester.requestFocus()
+                if (textFieldState.isSelected) {
+                    focusRequester.requestFocus()
+                }
             }
 
             TextLine(
-                number = index + 1,
                 textFieldValue = textFieldState.value,
-                isSelected = textFieldState.isSelected,
                 onUpdateText = { newText ->
                     linesState.updateLine(targetIndex = index, textFieldValue = newText)
                 },
                 onAddNewLine = { newText ->
-                   linesState.addNewLine(targetIndex = index, textFieldValue = newText)
+                    linesState.addNewLine(targetIndex = index, textFieldValue = newText)
                 },
                 onDeleteNewLine = {
                     linesState.deleteNewLine(targetIndex = index)
                 },
-                focusRequester = focusRequester,
-                onFocus = {
-                    linesState.selectLine(targetIndex = index)
-                },
+                focusRequester = focusRequester
             )
         }
     }

@@ -86,10 +86,6 @@ data class TextEditorState(private val text: String) {
         }
     }
 
-    private fun TextFieldValue.containsNL(): Boolean {
-        return this.text.contains("\n")
-    }
-
     private fun TextFieldValue.splitTextsByNL(): List<TextFieldValue> {
         return this.text.split("\n").map { TextFieldValue(it, TextRange.Zero) }
     }

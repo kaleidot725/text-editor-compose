@@ -1,5 +1,6 @@
 package jp.kaleidot725.texteditor
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,14 +19,13 @@ fun TextEditor(modifier: Modifier = Modifier) {
 
     LazyColumn(modifier = modifier) {
         itemsIndexed(
-            items = linesState.fields
+            items = linesState.fields,
+            key = { _, item -> item.id }
         ) { index, textFieldState ->
             val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
             LaunchedEffect(textFieldState.isSelected) {
-                if (textFieldState.isSelected) {
-                    focusRequester.requestFocus()
-                }
+                if (textFieldState.isSelected) focusRequester.requestFocus()
             }
 
             TextLine(
@@ -39,7 +39,11 @@ fun TextEditor(modifier: Modifier = Modifier) {
                 onDeleteNewLine = {
                     linesState.deleteNewLine(targetIndex = index)
                 },
-                focusRequester = focusRequester
+                focusRequester = focusRequester,
+                onFocus = {
+                    linesState.selectLine(targetIndex = index)
+                },
+                modifier = Modifier.background(if (textFieldState.isSelected) Color.Red else Color.White)
             )
         }
     }

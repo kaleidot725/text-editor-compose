@@ -36,7 +36,7 @@ data class TextEditorState(private val text: String) {
     }
 
     fun deleteNewLine(targetIndex: Int) {
-        if (_fields.count() == 1) return
+        if (targetIndex == 0) return
         val newText = _fields[targetIndex - 1].value.text + _fields[targetIndex].value.text
         val newFieldValue = TextFieldValue(newText, TextRange(newText.count()))
         val newFieldState = _fields[targetIndex - 1].copy(value = newFieldValue, isSelected = true)

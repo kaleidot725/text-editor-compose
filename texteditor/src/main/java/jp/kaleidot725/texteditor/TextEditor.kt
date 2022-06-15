@@ -29,6 +29,7 @@ fun TextEditor(modifier: Modifier = Modifier) {
             }
 
             TextLine(
+                number = (index + 1).toString().padStart(3, '0'),
                 textFieldValue = textFieldState.value,
                 onUpdateText = { newText ->
                     linesState.updateLine(targetIndex = index, textFieldValue = newText)
@@ -43,7 +44,7 @@ fun TextEditor(modifier: Modifier = Modifier) {
                 onFocus = {
                     linesState.selectLine(targetIndex = index)
                 },
-                modifier = Modifier.background(if (textFieldState.isSelected) Color.Red else Color.White)
+                modifier = Modifier.background(if (textFieldState.isSelected) Color(0x80eaffea) else Color.White)
             )
         }
     }

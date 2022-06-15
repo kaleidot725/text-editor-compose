@@ -4,9 +4,13 @@ import android.util.Log
 import android.view.KeyEvent.KEYCODE_DEL
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,9 +29,12 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun TextLine(
+    number: String,
     textFieldValue: TextFieldValue,
     onUpdateText: (TextFieldValue) -> Unit,
     onAddNewLine: (TextFieldValue) -> Unit,
@@ -39,6 +46,15 @@ fun TextLine(
     val currentTextField by rememberUpdatedState(newValue = textFieldValue)
 
     Row(modifier = modifier) {
+        Text(
+            text = number,
+            modifier = Modifier
+                .wrapContentSize()
+                .align(Alignment.Top)
+        )
+
+        Spacer(modifier = Modifier.size(4.dp))
+
         BasicTextField(
             value = currentTextField,
             onValueChange = {

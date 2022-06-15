@@ -22,7 +22,6 @@ data class TextEditorState(private val text: String) {
     val fields get() = _fields.toList()
 
     fun addNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
-        Log.v("TEST", "AddNewLine $targetIndex")
         val newFieldValues = textFieldValue.splitTextsByNL()
         _fields[targetIndex] = _fields[targetIndex].copy(value = newFieldValues.first(), isSelected = false)
 
@@ -37,6 +36,7 @@ data class TextEditorState(private val text: String) {
     }
 
     fun deleteNewLine(targetIndex: Int) {
+        if (_fields.count() == 1) return
         val newText = _fields[targetIndex - 1].value.text + _fields[targetIndex].value.text
         val newFieldValue = TextFieldValue(newText, TextRange(newText.count()))
         val newFieldState = _fields[targetIndex - 1].copy(value = newFieldValue, isSelected = true)
@@ -60,6 +60,7 @@ data class TextEditorState(private val text: String) {
     }
 
     private fun String.createInitTextFieldStates(): List<TextLineState> {
+        if (this.lines().isEmpty()) return listOf(TextLineState(isSelected = false))
         return this.lines().mapIndexed { index, s ->
             TextLineState(
                 value = TextFieldValue(s, TextRange.Zero),

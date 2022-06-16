@@ -5,6 +5,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import jp.kaleidot725.texteditor.state.TextEditorState
 import java.security.InvalidParameterException
 
 class TextEditorStateTest : StringSpec({

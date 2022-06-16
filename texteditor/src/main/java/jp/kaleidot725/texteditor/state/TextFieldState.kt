@@ -1,4 +1,4 @@
-package jp.kaleidot725.texteditor
+package jp.kaleidot725.texteditor.state
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.text.input.TextFieldValue

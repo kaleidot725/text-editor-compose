@@ -25,7 +25,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun TextField(
+internal fun TextField(
     number: String,
     textFieldValue: TextFieldValue,
     onUpdateText: (TextFieldValue) -> Unit,

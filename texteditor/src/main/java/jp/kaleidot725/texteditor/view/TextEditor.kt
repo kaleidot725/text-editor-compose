@@ -11,14 +11,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
+import jp.kaleidot725.texteditor.state.TextEditorState
 
 @Composable
-fun TextEditor(text: String, modifier: Modifier = Modifier) {
-    val linesState by rememberTextEditorState(text)
-
+fun TextEditor(
+    textEditorState: TextEditorState,
+    modifier: Modifier = Modifier
+) {
     LazyColumn(modifier = modifier) {
         itemsIndexed(
-            items = linesState.fields,
+            items = textEditorState.fields,
             key = { _, item -> item.id }
         ) { index, textFieldState ->
             val focusRequester by remember { mutableStateOf(FocusRequester()) }
@@ -27,23 +29,24 @@ fun TextEditor(text: String, modifier: Modifier = Modifier) {
                 if (textFieldState.isSelected) focusRequester.requestFocus()
             }
 
+            val bgColor = if (textFieldState.isSelected) Color(0x80eaffea) else Color.White
             TextField(
                 number = (index + 1).toString().padStart(3, '0'),
                 textFieldValue = textFieldState.value,
                 onUpdateText = { newText ->
-                    linesState.updateField(targetIndex = index, textFieldValue = newText)
+                    textEditorState.updateField(targetIndex = index, textFieldValue = newText)
                 },
                 onAddNewLine = { newText ->
-                    linesState.splitField(targetIndex = index, textFieldValue = newText)
+                    textEditorState.splitField(targetIndex = index, textFieldValue = newText)
                 },
                 onDeleteNewLine = {
-                    linesState.deleteField(targetIndex = index)
+                    textEditorState.deleteField(targetIndex = index)
                 },
                 focusRequester = focusRequester,
                 onFocus = {
-                    linesState.selectField(targetIndex = index)
+                    textEditorState.selectField(targetIndex = index)
                 },
-                modifier = Modifier.background(if (textFieldState.isSelected) Color(0x80eaffea) else Color.White)
+                modifier = Modifier.background(bgColor)
             )
         }
     }

@@ -3,24 +3,72 @@ package jp.kaleidot725.sample
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import jp.kaleidot725.sample.ui.theme.SampleTheme
 import jp.kaleidot725.texteditor.TextEditor
+import jp.kaleidot725.texteditor.extension.rememberTextEditorState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             SampleTheme {
-                TextEditor(modifier = Modifier.fillMaxSize())
+                val textEditorState by rememberTextEditorState(text = DemoText)
+                TextEditor(textEditorState = textEditorState, modifier = Modifier.fillMaxSize())
             }
         }
     }
 }
+
+private val DemoText = """
+    アリスは川辺でおねえさんのよこにすわって、
+    なんにもすることがないのでとても退屈（たいくつ）しはじめていました。
+    一、二回はおねえさんの読んでいる本をのぞいてみたけれど、そこには絵も会話もないのです。
+    「絵や会話のない本なんて、なんの役にもたたないじゃないの」とアリスは思いました。
+    そこでアリスは、頭のなかで、ひなぎくのくさりをつくったら楽しいだろうけれど、
+    起きあがってひなぎくをつむのもめんどくさいし、どうしようかと考えていました
+    （といっても、昼間で暑いし、とってもねむくて頭もまわらなかったので、これもたいへんだったのですが）。
+    そこへいきなり、ピンクの目をした白うさぎが近くを走ってきたのです。
+    それだけなら、そんなにめずらしいことでもありませんでした。さらにアリスとしては、
+    そのうさぎが「どうしよう！　どうしよう！　ちこくしちゃうぞ！」とつぶやくのを聞いたときも、
+    それがそんなにへんてこだとは思いませんでした（あとから考えてみたら、これも不思議に思うべきだったのですけれど、
+    でもこのときには、それがごく自然なことに思えたのです）。
+    アリスは川辺でおねえさんのよこにすわって、
+    なんにもすることがないのでとても退屈（たいくつ）しはじめていました。
+    一、二回はおねえさんの読んでいる本をのぞいてみたけれど、そこには絵も会話もないのです。
+    「絵や会話のない本なんて、なんの役にもたたないじゃないの」とアリスは思いました。
+    そこでアリスは、頭のなかで、ひなぎくのくさりをつくったら楽しいだろうけれど、
+    起きあがってひなぎくをつむのもめんどくさいし、どうしようかと考えていました
+    （といっても、昼間で暑いし、とってもねむくて頭もまわらなかったので、これもたいへんだったのですが）。
+    そこへいきなり、ピンクの目をした白うさぎが近くを走ってきたのです。
+    それだけなら、そんなにめずらしいことでもありませんでした。さらにアリスとしては、
+    そのうさぎが「どうしよう！　どうしよう！　ちこくしちゃうぞ！」とつぶやくのを聞いたときも、
+    それがそんなにへんてこだとは思いませんでした（あとから考えてみたら、これも不思議に思うべきだったのですけれど、
+    でもこのときには、それがごく自然なことに思えたのです）。
+    アリスは川辺でおねえさんのよこにすわって、
+    なんにもすることがないのでとても退屈（たいくつ）しはじめていました。
+    一、二回はおねえさんの読んでいる本をのぞいてみたけれど、そこには絵も会話もないのです。
+    「絵や会話のない本なんて、なんの役にもたたないじゃないの」とアリスは思いました。
+    そこでアリスは、頭のなかで、ひなぎくのくさりをつくったら楽しいだろうけれど、
+    起きあがってひなぎくをつむのもめんどくさいし、どうしようかと考えていました
+    （といっても、昼間で暑いし、とってもねむくて頭もまわらなかったので、これもたいへんだったのですが）。
+    そこへいきなり、ピンクの目をした白うさぎが近くを走ってきたのです。
+    それだけなら、そんなにめずらしいことでもありませんでした。さらにアリスとしては、
+    そのうさぎが「どうしよう！　どうしよう！　ちこくしちゃうぞ！」とつぶやくのを聞いたときも、
+    それがそんなにへんてこだとは思いませんでした（あとから考えてみたら、これも不思議に思うべきだったのですけれど、
+    でもこのときには、それがごく自然なことに思えたのです）。
+    アリスは川辺でおねえさんのよこにすわって、
+    なんにもすることがないのでとても退屈（たいくつ）しはじめていました。
+    一、二回はおねえさんの読んでいる本をのぞいてみたけれど、そこには絵も会話もないのです。
+    「絵や会話のない本なんて、なんの役にもたたないじゃないの」とアリスは思いました。
+    そこでアリスは、頭のなかで、ひなぎくのくさりをつくったら楽しいだろうけれど、
+    起きあがってひなぎくをつむのもめんどくさいし、どうしようかと考えていました
+    （といっても、昼間で暑いし、とってもねむくて頭もまわらなかったので、これもたいへんだったのですが）。
+    そこへいきなり、ピンクの目をした白うさぎが近くを走ってきたのです。
+    それだけなら、そんなにめずらしいことでもありませんでした。さらにアリスとしては、
+    そのうさぎが「どうしよう！　どうしよう！　ちこくしちゃうぞ！」とつぶやくのを聞いたときも、
+    それがそんなにへんてこだとは思いませんでした（あとから考えてみたら、これも不思議に思うべきだったのですけれど、
+    でもこのときには、それがごく自然なことに思えたのです）。
+""".trimIndent()

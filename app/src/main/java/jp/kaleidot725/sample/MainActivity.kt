@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import jp.kaleidot725.sample.ui.theme.SampleTheme
-import jp.kaleidot725.texteditor.TextEditor
+import jp.kaleidot725.texteditor.view.TextEditor
 import jp.kaleidot725.texteditor.extension.rememberTextEditorState
 
 class MainActivity : ComponentActivity() {

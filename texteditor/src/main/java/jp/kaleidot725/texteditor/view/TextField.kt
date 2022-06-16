@@ -1,4 +1,4 @@
-package jp.kaleidot725.texteditor
+package jp.kaleidot725.texteditor.view
 
 import android.view.KeyEvent.KEYCODE_DEL
 import androidx.compose.foundation.layout.Row

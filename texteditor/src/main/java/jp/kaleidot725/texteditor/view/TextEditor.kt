@@ -1,4 +1,4 @@
-package jp.kaleidot725.texteditor
+package jp.kaleidot725.texteditor.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn

@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import java.security.InvalidParameterException
 
 @Composable
 fun rememberTextEditorState(text: String) = remember {
@@ -20,21 +21,41 @@ data class TextEditorState(private val text: String) {
     private val _fields = text.createInitTextFieldStates().toMutableStateList()
     val fields get() = _fields.toList()
 
-    fun addNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
+    fun splitField(targetIndex: Int, textFieldValue: TextFieldValue) {
+        if (targetIndex < 0 || fields.count() <= targetIndex) {
+            throw InvalidParameterException("targetIndex out of range($targetIndex)")
+        }
+
+        if (!textFieldValue.text.contains('\n')) {
+            throw InvalidParameterException("textFieldValue doesn't contains newline")
+        }
+
         val newFieldValues = textFieldValue.splitTextsByNL()
         _fields[targetIndex] = _fields[targetIndex].copy(value = newFieldValues.first(), isSelected = false)
 
         val tests = newFieldValues.subList(1, newFieldValues.count()).map { TextLineState(value = it, isSelected = false) }
         _fields.addAll(targetIndex + 1, tests)
 
-        selectLine(targetIndex + 1)
+        selectField(targetIndex + newFieldValues.count() - 1)
     }
 
-    fun updateLine(targetIndex: Int, textFieldValue: TextFieldValue) {
+    fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
+        if (targetIndex < 0 || fields.count() <= targetIndex) {
+            throw InvalidParameterException("targetIndex out of range($targetIndex)")
+        }
+
+        if (textFieldValue.text.contains('\n')) {
+            throw InvalidParameterException("textFieldValue contains newline")
+        }
+
         _fields[targetIndex] = _fields[targetIndex].copy(value = textFieldValue)
     }
 
-    fun deleteNewLine(targetIndex: Int) {
+    fun deleteField(targetIndex: Int) {
+        if (targetIndex < 0 || fields.count() <= targetIndex) {
+            throw InvalidParameterException("targetIndex out of range($targetIndex)")
+        }
+
         if (targetIndex == 0) return
 
         val toText = _fields[targetIndex - 1].value.text
@@ -48,7 +69,11 @@ data class TextEditorState(private val text: String) {
         _fields.removeAt(targetIndex)
     }
 
-    fun selectLine(targetIndex: Int) {
+    fun selectField(targetIndex: Int) {
+        if (targetIndex < 0 || fields.count() <= targetIndex) {
+            throw InvalidParameterException("targetIndex out of range($targetIndex)")
+        }
+
         selectedIndexMarks.forEach() { mark ->
             val old = _fields.getOrNull(mark)?.copy(isSelected = false) ?: return@forEach
             _fields[mark] = old

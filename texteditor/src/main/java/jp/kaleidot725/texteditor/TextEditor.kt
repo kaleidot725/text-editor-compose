@@ -1,6 +1,5 @@
 package jp.kaleidot725.texteditor
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -32,17 +31,17 @@ fun TextEditor(modifier: Modifier = Modifier) {
                 number = (index + 1).toString().padStart(3, '0'),
                 textFieldValue = textFieldState.value,
                 onUpdateText = { newText ->
-                    linesState.updateLine(targetIndex = index, textFieldValue = newText)
+                    linesState.updateField(targetIndex = index, textFieldValue = newText)
                 },
                 onAddNewLine = { newText ->
-                    linesState.addNewLine(targetIndex = index, textFieldValue = newText)
+                    linesState.splitField(targetIndex = index, textFieldValue = newText)
                 },
                 onDeleteNewLine = {
-                    linesState.deleteNewLine(targetIndex = index)
+                    linesState.deleteField(targetIndex = index)
                 },
                 focusRequester = focusRequester,
                 onFocus = {
-                    linesState.selectLine(targetIndex = index)
+                    linesState.selectField(targetIndex = index)
                 },
                 modifier = Modifier.background(if (textFieldState.isSelected) Color(0x80eaffea) else Color.White)
             )

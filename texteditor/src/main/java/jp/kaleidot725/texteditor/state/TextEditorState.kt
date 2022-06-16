@@ -9,11 +9,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import java.security.InvalidParameterException
 
-@Composable
-fun rememberTextEditorState(text: String) = remember {
-    mutableStateOf(TextEditorState(text))
-}
-
 @Stable
 data class TextEditorState(private val text: String) {
     private val selectedIndexMarks: MutableList<Int> = mutableListOf(0)

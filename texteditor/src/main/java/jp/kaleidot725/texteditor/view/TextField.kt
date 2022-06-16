@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
@@ -59,18 +60,26 @@ internal fun TextField(
                 .focusRequester(focusRequester)
                 .onFocusChanged { if (it.isFocused) onFocus() }
                 .onPreviewKeyEvent { event ->
-                    val isKeyUp = event.type == KeyEventType.KeyUp
-                    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
-                    val isEmpty = currentTextField.selection == TextRange.Zero
-                    if (isKeyUp && isBackKey && isEmpty) {
+                    onPreviewDelKeyEvent(event, currentTextField.selection) {
                         onDeleteNewLine()
-                        true
-                    } else {
-                        false
                     }
                 }
         )
     }
+}
 
-
+private fun onPreviewDelKeyEvent(
+    event: KeyEvent,
+    selection: TextRange,
+    invoke: () -> Unit
+): Boolean {
+    val isKeyUp = event.type == KeyEventType.KeyUp
+    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
+    val isEmpty = selection == TextRange.Zero
+    return if (isKeyUp && isBackKey && isEmpty) {
+        invoke()
+        true
+    } else {
+        false
+    }
 }

@@ -30,13 +30,16 @@ data class TextEditorState(private val text: String) {
             throw InvalidParameterException("textFieldValue doesn't contains newline")
         }
 
-        val newFieldValues = textFieldValue.splitTextsByNL()
-        _fields[targetIndex] = _fields[targetIndex].copy(value = newFieldValues.first(), isSelected = false)
+        val splitFieldValues = textFieldValue.splitTextsByNL()
+        val firstSplitFieldValue = splitFieldValues.first()
+        _fields[targetIndex] = _fields[targetIndex].copy(value = firstSplitFieldValue, isSelected = false)
 
-        val tests = newFieldValues.subList(1, newFieldValues.count()).map { TextLineState(value = it, isSelected = false) }
-        _fields.addAll(targetIndex + 1, tests)
+        val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
+        val newSplitFieldStates = newSplitFieldValues.map { TextFieldState(value = it, isSelected = false) }
+        _fields.addAll(targetIndex + 1, newSplitFieldStates)
 
-        selectField(targetIndex + newFieldValues.count() - 1)
+        val lastNewSplitFieldIndex = targetIndex + splitFieldValues.lastIndex
+        selectField(lastNewSplitFieldIndex)
     }
 
     fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
@@ -56,17 +59,21 @@ data class TextEditorState(private val text: String) {
             throw InvalidParameterException("targetIndex out of range($targetIndex)")
         }
 
-        if (targetIndex == 0) return
+        if (targetIndex == 0) {
+            return
+        }
 
         val toText = _fields[targetIndex - 1].value.text
         val fromText = _fields[targetIndex].value.text
-        val newText = toText + fromText
-        val newFieldValue = TextFieldValue(newText, TextRange(toText.count()))
-        val newFieldState = _fields[targetIndex - 1].copy(value = newFieldValue, isSelected = true)
 
-        selectedIndexMarks.add(targetIndex - 1)
-        _fields[targetIndex - 1] = newFieldState
+        val concatText = toText + fromText
+        val concatSelection = TextRange(toText.count())
+        val concatTextFieldValue = TextFieldValue(text = concatText, selection = concatSelection)
+        val toTextFieldState = _fields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false)
+
+        _fields[targetIndex - 1] = toTextFieldState
         _fields.removeAt(targetIndex)
+        selectField(targetIndex - 1)
     }
 
     fun selectField(targetIndex: Int) {
@@ -74,22 +81,19 @@ data class TextEditorState(private val text: String) {
             throw InvalidParameterException("targetIndex out of range($targetIndex)")
         }
 
-        selectedIndexMarks.forEach() { mark ->
-            val old = _fields.getOrNull(mark)?.copy(isSelected = false) ?: return@forEach
-            _fields[mark] = old
-        }
+        selectedIndexMarks
+            .filter { _fields.getOrNull(it) != null }
+            .forEach { index -> _fields[index] = _fields[index].copy(isSelected = false) }
         selectedIndexMarks.clear()
 
-        val new = _fields.getOrNull(targetIndex)?.copy(isSelected = true)
-        new?.let { _fields[targetIndex] = it }
-
+        _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
         selectedIndexMarks.add(targetIndex)
     }
 
-    private fun String.createInitTextFieldStates(): List<TextLineState> {
-        if (this.lines().isEmpty()) return listOf(TextLineState(isSelected = false))
+    private fun String.createInitTextFieldStates(): List<TextFieldState> {
+        if (this.lines().isEmpty()) return listOf(TextFieldState(isSelected = false))
         return this.lines().mapIndexed { index, s ->
-            TextLineState(
+            TextFieldState(
                 value = TextFieldValue(s, TextRange.Zero),
                 isSelected = index == 0
             )

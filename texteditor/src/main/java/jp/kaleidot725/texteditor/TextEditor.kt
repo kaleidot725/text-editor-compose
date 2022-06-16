@@ -13,8 +13,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun TextEditor(modifier: Modifier = Modifier) {
-    val linesState by rememberTextEditorState(DemoText)
+fun TextEditor(text: String, modifier: Modifier = Modifier) {
+    val linesState by rememberTextEditorState(text)
 
     LazyColumn(modifier = modifier) {
         itemsIndexed(
@@ -27,7 +27,7 @@ fun TextEditor(modifier: Modifier = Modifier) {
                 if (textFieldState.isSelected) focusRequester.requestFocus()
             }
 
-            TextLine(
+            TextField(
                 number = (index + 1).toString().padStart(3, '0'),
                 textFieldValue = textFieldState.value,
                 onUpdateText = { newText ->

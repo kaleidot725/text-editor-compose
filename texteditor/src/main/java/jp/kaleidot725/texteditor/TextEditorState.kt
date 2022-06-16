@@ -1,6 +1,5 @@
 package jp.kaleidot725.texteditor
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
@@ -37,8 +36,11 @@ data class TextEditorState(private val text: String) {
 
     fun deleteNewLine(targetIndex: Int) {
         if (targetIndex == 0) return
-        val newText = _fields[targetIndex - 1].value.text + _fields[targetIndex].value.text
-        val newFieldValue = TextFieldValue(newText, TextRange(newText.count()))
+
+        val toText = _fields[targetIndex - 1].value.text
+        val fromText = _fields[targetIndex].value.text
+        val newText = toText + fromText
+        val newFieldValue = TextFieldValue(newText, TextRange(toText.count()))
         val newFieldState = _fields[targetIndex - 1].copy(value = newFieldValue, isSelected = true)
 
         selectedIndexMarks.add(targetIndex - 1)

@@ -1,7 +1,10 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'maven-publish'
 }
+
+group = 'com.github.kaleidot725'
 
 android {
     namespace 'jp.kaleidot725.texteditor'
@@ -53,5 +56,17 @@ dependencies {
 
     testImplementation "org.jetbrains.kotlin:kotlin-reflect:1.6.21"
     testImplementation 'io.kotest:kotest-runner-junit5:5.3.1'
+}
 
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.kaleidot725'
+                artifactId = 'TextEditorCompose'
+                version = '0.1.0'
+            }
+        }
+    }
 }

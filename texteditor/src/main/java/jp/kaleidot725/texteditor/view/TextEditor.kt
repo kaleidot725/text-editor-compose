@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
-import jp.kaleidot725.texteditor.extension.toEditable
+import jp.kaleidot725.texteditor.state.EditableTextEditorState
 import jp.kaleidot725.texteditor.state.TextEditorState
 
 @Composable
@@ -56,4 +56,8 @@ fun TextEditor(
             )
         }
     }
+}
+
+internal fun TextEditorState.toEditable(): EditableTextEditorState {
+    return this as EditableTextEditorState
 }

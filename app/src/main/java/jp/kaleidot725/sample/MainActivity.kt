@@ -5,18 +5,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import jp.kaleidot725.sample.ui.theme.SampleTheme
-import jp.kaleidot725.texteditor.view.TextEditor
 import jp.kaleidot725.texteditor.extension.rememberTextEditorState
+import jp.kaleidot725.texteditor.view.TextEditor
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             SampleTheme {
-                val textEditorState by rememberTextEditorState(text = DemoText)
-                TextEditor(textEditorState = textEditorState, modifier = Modifier.fillMaxSize())
+                var textEditorState by rememberTextEditorState(lines = DemoText.lines())
+                TextEditor(
+                    textEditorState = textEditorState,
+                    onUpdatedState = { textEditorState = it },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }

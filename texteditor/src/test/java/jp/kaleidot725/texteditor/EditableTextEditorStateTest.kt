@@ -4,6 +4,9 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.collections.shouldNotContainExactly
 import io.kotest.matchers.shouldBe
 import jp.kaleidot725.texteditor.state.EditableTextEditorState
 import java.security.InvalidParameterException
@@ -229,5 +232,15 @@ class EditableTextEditorStateTest : StringSpec({
         shouldThrow<InvalidParameterException> {
             state.selectField(3)
         }
+    }
+    "deep_copy" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+        state.selectField(0)
+        state.updateField(0, TextFieldValue("012", TextRange(3)))
+
+        val copy = state.deepCopy()
+        state.lines shouldContainExactly copy.lines
+        state.selectedIndices shouldContainExactly  copy.selectedIndices
+        state.fields shouldContainExactly copy.fields
     }
 })

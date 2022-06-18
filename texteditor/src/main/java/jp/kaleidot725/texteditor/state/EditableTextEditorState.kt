@@ -8,14 +8,18 @@ import androidx.compose.ui.text.input.TextFieldValue
 import java.security.InvalidParameterException
 
 @Stable
-internal class EditableTextEditorState(lines: List<String>) : TextEditorState {
+internal class EditableTextEditorState(
+    lines: List<String>,
+    selectedIndices: List<Int>? = null,
+    fields: List<TextFieldState>? = null,
+) : TextEditorState {
     private val _lines = lines.toMutableStateList()
     override val lines get() = _lines.toList()
 
-    private val _selectedIndices = mutableStateListOf(0)
-    override val selectedIndices = _selectedIndices
+    private val _selectedIndices = (selectedIndices ?: listOf(0)).toMutableStateList()
+    override val selectedIndices: List<Int> = _selectedIndices.toList()
 
-    private val _fields = lines.createInitTextFieldStates().toMutableStateList()
+    private val _fields = (fields ?: lines.createInitTextFieldStates()).toMutableStateList()
     val fields get() = _fields.toList()
 
     fun splitField(targetIndex: Int, textFieldValue: TextFieldValue) {
@@ -92,6 +96,10 @@ internal class EditableTextEditorState(lines: List<String>) : TextEditorState {
 
         _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
         _selectedIndices.add(targetIndex)
+    }
+
+    override fun deepCopy(): EditableTextEditorState {
+        return EditableTextEditorState(lines.toList(), selectedIndices.toList(), fields.toList())
     }
 
     private fun List<String>.createInitTextFieldStates(): List<TextFieldState> {

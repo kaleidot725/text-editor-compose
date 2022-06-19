@@ -6,5 +6,5 @@ import androidx.compose.runtime.Stable
 interface TextEditorState {
     val lines: List<String>
     val selectedIndices: List<Int>
-    fun deepCopy(): TextEditorState
+    fun createText(): String
 }

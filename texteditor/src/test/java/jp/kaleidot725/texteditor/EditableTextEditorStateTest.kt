@@ -39,6 +39,13 @@ class EditableTextEditorStateTest : StringSpec({
         state.lines[1] shouldBe "two"
         state.lines[2] shouldBe "three"
     }
+    "create_text" {
+        val state = EditableTextEditorState("a\nb\nc".lines())
+        state.splitField(2, TextFieldValue("c\n"))
+        state.updateField(3, TextFieldValue("d"))
+        val actual = state.createText()
+        actual shouldBe "a\nb\nc\nd"
+    }
     "split_field_when_field_is_empty" {
         val state = EditableTextEditorState("".lines())
         state.splitField(targetIndex = 0, TextFieldValue(text = "\n"))
@@ -232,15 +239,5 @@ class EditableTextEditorStateTest : StringSpec({
         shouldThrow<InvalidParameterException> {
             state.selectField(3)
         }
-    }
-    "deep_copy" {
-        val state = EditableTextEditorState("0\n1\n2".lines())
-        state.selectField(0)
-        state.updateField(0, TextFieldValue("012", TextRange(3)))
-
-        val copy = state.deepCopy()
-        state.lines shouldContainExactly copy.lines
-        state.selectedIndices shouldContainExactly  copy.selectedIndices
-        state.fields shouldContainExactly copy.fields
     }
 })

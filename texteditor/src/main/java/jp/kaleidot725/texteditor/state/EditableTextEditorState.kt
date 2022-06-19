@@ -22,6 +22,12 @@ internal class EditableTextEditorState(
     private val _fields = (fields ?: lines.createInitTextFieldStates()).toMutableStateList()
     val fields get() = _fields.toList()
 
+    override fun createText(): String {
+        return lines.foldIndexed("") { index, acc, s ->
+            if (index == 0) acc + s else acc + "\n" + s
+        }
+    }
+
     fun splitField(targetIndex: Int, textFieldValue: TextFieldValue) {
         if (targetIndex < 0 || fields.count() <= targetIndex) {
             throw InvalidParameterException("targetIndex out of range($targetIndex)")
@@ -96,10 +102,6 @@ internal class EditableTextEditorState(
 
         _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
         _selectedIndices.add(targetIndex)
-    }
-
-    override fun deepCopy(): EditableTextEditorState {
-        return EditableTextEditorState(lines.toList(), selectedIndices.toList(), fields.toList())
     }
 
     private fun List<String>.createInitTextFieldStates(): List<TextFieldState> {

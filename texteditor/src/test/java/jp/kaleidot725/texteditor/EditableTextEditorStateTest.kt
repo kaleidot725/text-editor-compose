@@ -231,6 +231,24 @@ class EditableTextEditorStateTest : StringSpec({
         state.fields[1].isSelected shouldBe false
         state.fields[2].isSelected shouldBe false
     }
+    "select_selected_field" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+
+        state.selectField(1)
+        state.fields[0].isSelected shouldBe false
+        state.fields[1].isSelected shouldBe true
+        state.fields[2].isSelected shouldBe false
+
+        state.selectField(2)
+        state.fields[0].isSelected shouldBe false
+        state.fields[1].isSelected shouldBe false
+        state.fields[2].isSelected shouldBe true
+
+        state.selectField(0)
+        state.fields[0].isSelected shouldBe true
+        state.fields[1].isSelected shouldBe false
+        state.fields[2].isSelected shouldBe false
+    }
     "select_field_when_input_invalid_target_index" {
         val state = EditableTextEditorState("0\n1\n2".lines())
         shouldThrow<InvalidParameterException> {

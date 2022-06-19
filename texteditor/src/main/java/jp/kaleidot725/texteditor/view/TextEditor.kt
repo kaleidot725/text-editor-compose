@@ -49,6 +49,7 @@ fun TextEditor(
                 },
                 focusRequester = focusRequester,
                 onFocus = {
+                    if (textEditorState.selectedIndices.contains(index)) return@TextField
                     textEditorState.toEditable().selectField(targetIndex = index)
                     onUpdatedState(textEditorState)
                 },

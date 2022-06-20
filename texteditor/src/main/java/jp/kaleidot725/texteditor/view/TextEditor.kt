@@ -1,6 +1,5 @@
 package jp.kaleidot725.texteditor.view
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -10,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import jp.kaleidot725.texteditor.state.EditableTextEditorState
 import jp.kaleidot725.texteditor.state.TextEditorState
 
@@ -18,7 +16,11 @@ import jp.kaleidot725.texteditor.state.TextEditorState
 fun TextEditor(
     textEditorState: TextEditorState,
     onUpdatedState: (TextEditorState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    decorationBox: @Composable (
+        index: Int,
+        isSelected: Boolean, innerTextField: @Composable (modifier: Modifier) -> Unit
+    ) -> Unit = { _, _, innerTextField ->  innerTextField(Modifier) },
 ) {
     LazyColumn(modifier = modifier) {
         itemsIndexed(
@@ -31,30 +33,32 @@ fun TextEditor(
                 if (textFieldState.isSelected) focusRequester.requestFocus()
             }
 
-            val bgColor = if (textFieldState.isSelected) Color(0x80eaffea) else Color.White
-            TextField(
-                number = (index + 1).toString().padStart(3, '0'),
-                textFieldValue = textFieldState.value,
-                onUpdateText = { newText ->
-                    textEditorState.toEditable().updateField(targetIndex = index, textFieldValue = newText)
-                    onUpdatedState(textEditorState)
-                },
-                onAddNewLine = { newText ->
-                    textEditorState.toEditable().splitField(targetIndex = index, textFieldValue = newText)
-                    onUpdatedState(textEditorState)
-                },
-                onDeleteNewLine = {
-                    textEditorState.toEditable().deleteField(targetIndex = index)
-                    onUpdatedState(textEditorState)
-                },
-                focusRequester = focusRequester,
-                onFocus = {
-                    if (textEditorState.selectedIndices.contains(index)) return@TextField
-                    textEditorState.toEditable().selectField(targetIndex = index)
-                    onUpdatedState(textEditorState)
-                },
-                modifier = Modifier.background(bgColor)
-            )
+            decorationBox(index, textFieldState.isSelected) { modifier ->
+                TextField(
+                    textFieldValue = textFieldState.value,
+                    onUpdateText = { newText ->
+                        textEditorState.toEditable()
+                            .updateField(targetIndex = index, textFieldValue = newText)
+                        onUpdatedState(textEditorState)
+                    },
+                    onAddNewLine = { newText ->
+                        textEditorState.toEditable()
+                            .splitField(targetIndex = index, textFieldValue = newText)
+                        onUpdatedState(textEditorState)
+                    },
+                    onDeleteNewLine = {
+                        textEditorState.toEditable().deleteField(targetIndex = index)
+                        onUpdatedState(textEditorState)
+                    },
+                    focusRequester = focusRequester,
+                    onFocus = {
+                        if (textEditorState.selectedIndices.contains(index)) return@TextField
+                        textEditorState.toEditable().selectField(targetIndex = index)
+                        onUpdatedState(textEditorState)
+                    },
+                    modifier = modifier
+                )
+            }
         }
     }
 }

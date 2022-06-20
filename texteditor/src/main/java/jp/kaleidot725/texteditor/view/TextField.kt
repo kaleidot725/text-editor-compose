@@ -1,6 +1,7 @@
 package jp.kaleidot725.texteditor.view
 
 import android.view.KeyEvent.KEYCODE_DEL
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,7 +28,6 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun TextField(
-    number: String,
     textFieldValue: TextFieldValue,
     onUpdateText: (TextFieldValue) -> Unit,
     onAddNewLine: (TextFieldValue) -> Unit,
@@ -38,16 +38,7 @@ internal fun TextField(
 ) {
     val currentTextField by rememberUpdatedState(newValue = textFieldValue)
 
-    Row(modifier = modifier) {
-        Text(
-            text = number,
-            modifier = Modifier
-                .wrapContentSize()
-                .align(Alignment.Top)
-        )
-
-        Spacer(modifier = Modifier.size(4.dp))
-
+    Box(modifier = modifier) {
         BasicTextField(
             value = currentTextField,
             onValueChange = {
@@ -56,7 +47,6 @@ internal fun TextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .align(Alignment.Top)
                 .focusRequester(focusRequester)
                 .onFocusChanged { if (it.isFocused) onFocus() }
                 .onPreviewKeyEvent { event ->

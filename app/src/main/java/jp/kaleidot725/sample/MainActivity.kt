@@ -3,10 +3,18 @@ package jp.kaleidot725.sample
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import jp.kaleidot725.sample.ui.theme.SampleTheme
 import jp.kaleidot725.texteditor.extension.rememberTextEditorState
 import jp.kaleidot725.texteditor.view.TextEditor
@@ -21,7 +29,14 @@ class MainActivity : ComponentActivity() {
                     textEditorState = textEditorState,
                     onUpdatedState = { textEditorState = it },
                     modifier = Modifier.fillMaxSize()
-                )
+                ) { index, isSelected, innerTextField ->
+                    val color =if (isSelected) Color.Green else Color.White
+                    Row(modifier = Modifier.background(color)) {
+                        Text(text = index.toString().padEnd(3, '0'))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        innerTextField(modifier = Modifier)
+                    }
+                }
             }
         }
     }

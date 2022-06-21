@@ -16,49 +16,43 @@ import jp.kaleidot725.texteditor.state.TextEditorState
 fun TextEditor(
     textEditorState: TextEditorState,
     onUpdatedState: () -> Unit,
-    modifier: Modifier = Modifier,
-    decorationBox: @Composable (
-        index: Int,
-        isSelected: Boolean, innerTextField: @Composable (index: Int, isSelected: Boolean, modifier: Modifier) -> Unit
-    ) -> Unit = { index, isSelected, innerTextField ->  innerTextField(index, isSelected, Modifier) },
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier) {
         itemsIndexed(
             items = textEditorState.toEditable().fields,
             key = { _, item -> item.id }
         ) { index, textFieldState ->
-            decorationBox(index, textFieldState.isSelected) { index, isSelected, modifier ->
-                val focusRequester by remember { mutableStateOf(FocusRequester()) }
+            val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
-                LaunchedEffect(isSelected) {
-                    if (isSelected) focusRequester.requestFocus()
-                }
-
-                TextField(
-                    textFieldValue = textFieldState.value,
-                    onUpdateText = { newText ->
-                        textEditorState.toEditable()
-                            .updateField(targetIndex = index, textFieldValue = newText)
-                        onUpdatedState()
-                    },
-                    onAddNewLine = { newText ->
-                        textEditorState.toEditable()
-                            .splitField(targetIndex = index, textFieldValue = newText)
-                        onUpdatedState()
-                    },
-                    onDeleteNewLine = {
-                        textEditorState.toEditable().deleteField(targetIndex = index)
-                        onUpdatedState()
-                    },
-                    focusRequester = focusRequester,
-                    onFocus = {
-                        if (textEditorState.selectedIndices.contains(index)) return@TextField
-                        textEditorState.toEditable().selectField(targetIndex = index)
-                        onUpdatedState()
-                    },
-                    modifier = modifier
-                )
+            LaunchedEffect(textFieldState.isSelected) {
+                if (textFieldState.isSelected) focusRequester.requestFocus()
             }
+
+            TextField(
+                textFieldValue = textFieldState.value,
+                onUpdateText = { newText ->
+                    textEditorState.toEditable()
+                        .updateField(targetIndex = index, textFieldValue = newText)
+                    onUpdatedState()
+                },
+                onAddNewLine = { newText ->
+                    textEditorState.toEditable()
+                        .splitField(targetIndex = index, textFieldValue = newText)
+                    onUpdatedState()
+                },
+                onDeleteNewLine = {
+                    textEditorState.toEditable().deleteField(targetIndex = index)
+                    onUpdatedState()
+                },
+                focusRequester = focusRequester,
+                onFocus = {
+                    if (textEditorState.selectedIndices.contains(index)) return@TextField
+                    textEditorState.toEditable().selectField(targetIndex = index)
+                    onUpdatedState()
+                },
+                modifier = modifier
+            )
         }
     }
 }

@@ -4,9 +4,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.collections.shouldNotContain
-import io.kotest.matchers.collections.shouldNotContainExactly
 import io.kotest.matchers.shouldBe
 import jp.kaleidot725.texteditor.state.EditableTextEditorState
 import java.security.InvalidParameterException
@@ -20,11 +17,13 @@ class EditableTextEditorStateTest : StringSpec({
         state.fields[0].isSelected shouldBe true
     }
     "initialize_when_text_is_not_empty" {
-        val state = EditableTextEditorState("""
+        val state = EditableTextEditorState(
+            """
             one
             two
             three
-        """.trimIndent().lines())
+        """.trimIndent().lines()
+        )
 
         state.fields.count() shouldBe 3
         state.fields[0].value shouldBe TextFieldValue(text = "one")
@@ -52,7 +51,7 @@ class EditableTextEditorStateTest : StringSpec({
 
         state.fields.count() shouldBe 2
         state.fields[0].value shouldBe TextFieldValue(text = "")
-        state.fields[0].isSelected shouldBe  false
+        state.fields[0].isSelected shouldBe false
         state.fields[1].value shouldBe TextFieldValue(text = "")
         state.fields[1].isSelected shouldBe true
 
@@ -66,7 +65,7 @@ class EditableTextEditorStateTest : StringSpec({
 
         state.fields.count() shouldBe 2
         state.fields[0].value shouldBe TextFieldValue(text = "aaa")
-        state.fields[0].isSelected shouldBe  false
+        state.fields[0].isSelected shouldBe false
         state.fields[1].value shouldBe TextFieldValue(text = "")
         state.fields[1].isSelected shouldBe true
 
@@ -80,7 +79,7 @@ class EditableTextEditorStateTest : StringSpec({
 
         state.fields.count() shouldBe 2
         state.fields[0].value shouldBe TextFieldValue(text = "aa")
-        state.fields[0].isSelected shouldBe  false
+        state.fields[0].isSelected shouldBe false
         state.fields[1].value shouldBe TextFieldValue(text = "aa")
         state.fields[1].isSelected shouldBe true
 
@@ -94,11 +93,11 @@ class EditableTextEditorStateTest : StringSpec({
 
         state.fields.count() shouldBe 4
         state.fields[0].value shouldBe TextFieldValue(text = "a")
-        state.fields[0].isSelected shouldBe  false
+        state.fields[0].isSelected shouldBe false
         state.fields[1].value shouldBe TextFieldValue(text = "b")
-        state.fields[1].isSelected shouldBe  false
+        state.fields[1].isSelected shouldBe false
         state.fields[2].value shouldBe TextFieldValue(text = "c")
-        state.fields[2].isSelected shouldBe  false
+        state.fields[2].isSelected shouldBe false
         state.fields[3].value shouldBe TextFieldValue(text = "d")
         state.fields[3].isSelected shouldBe true
 
@@ -161,6 +160,7 @@ class EditableTextEditorStateTest : StringSpec({
     }
     "delete_field_when_fields_are_not_zero" {
         val state = EditableTextEditorState("abc\n".lines())
+
         state.selectField(1)
 
         state.fields.count() shouldBe 2
@@ -176,9 +176,9 @@ class EditableTextEditorStateTest : StringSpec({
 
         state.fields.count() shouldBe 1
         state.fields[0].value shouldBe TextFieldValue(
-            text ="abc", selection = TextRange("abc".count())
+            text = "abc", selection = TextRange("abc".count())
         )
-        state.fields[0].isSelected shouldBe  true
+        state.fields[0].isSelected shouldBe true
         state.lines.count() shouldBe 1
         state.lines[0] shouldBe "abc"
     }
@@ -199,8 +199,8 @@ class EditableTextEditorStateTest : StringSpec({
 
         state.fields.count() shouldBe 1
         state.fields[0].value shouldBe
-                TextFieldValue(text ="abcdef", selection = TextRange("abc".count()))
-        state.fields[0].isSelected shouldBe  true
+                TextFieldValue(text = "abcdef", selection = TextRange("abc".count()))
+        state.fields[0].isSelected shouldBe true
         state.lines.count() shouldBe 1
         state.lines[0] shouldBe "abcdef"
     }

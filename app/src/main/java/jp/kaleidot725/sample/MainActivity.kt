@@ -24,19 +24,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SampleTheme {
-                var textEditorState by rememberTextEditorState(lines = DemoText.lines())
+                val textEditorState by rememberTextEditorState(lines = DemoText.lines())
                 TextEditor(
                     textEditorState = textEditorState,
                     onUpdatedState = { },
                     modifier = Modifier.fillMaxSize()
-                ) { index, isSelected, innerTextField ->
-                    val color =if (isSelected) Color.Green else Color.White
-                    Row(modifier = Modifier.background(color)) {
-                        Text(text = index.toString().padEnd(3, '0'))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        innerTextField(index = index, isSelected = isSelected, modifier = Modifier)
-                    }
-                }
+                )
             }
         }
     }

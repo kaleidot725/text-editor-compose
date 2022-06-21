@@ -45,7 +45,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.1.1'
+        kotlinCompilerExtensionVersion '1.2.0-rc01'
     }
 }
 
@@ -65,7 +65,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.kaleidot725'
                 artifactId = 'text-editor-compose'
-                version = '0.1.0-beta02'
+                version = '0.1.0-beta03'
             }
         }
     }

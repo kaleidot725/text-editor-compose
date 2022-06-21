@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
                     Row(modifier = Modifier.background(color)) {
                         Text(text = index.toString().padEnd(3, '0'))
                         Spacer(modifier = Modifier.width(4.dp))
-                        innerTextField(modifier = Modifier)
+                        innerTextField(index = index, isSelected = isSelected, modifier = Modifier)
                     }
                 }
             }

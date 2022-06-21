@@ -16,11 +16,15 @@ internal class EditableTextEditorState(
     private val _lines = lines.toMutableStateList()
     override val lines get() = _lines.toList()
 
-    private val _selectedIndices = (selectedIndices ?: listOf(0)).toMutableStateList()
+    private val _selectedIndices = (selectedIndices ?: listOf(-1)).toMutableStateList()
     override val selectedIndices: List<Int> = _selectedIndices.toList()
 
     private val _fields = (fields ?: lines.createInitTextFieldStates()).toMutableStateList()
     val fields get() = _fields.toList()
+
+    init {
+        selectField(0)
+    }
 
     override fun createText(): String {
         return lines.foldIndexed("") { index, acc, s ->
@@ -109,7 +113,7 @@ internal class EditableTextEditorState(
         return this.mapIndexed { index, s ->
             TextFieldState(
                 value = TextFieldValue(s, TextRange.Zero),
-                isSelected = index == 0
+                isSelected = false
             )
         }
     }

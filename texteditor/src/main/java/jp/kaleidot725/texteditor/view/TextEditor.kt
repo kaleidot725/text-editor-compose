@@ -15,46 +15,46 @@ import jp.kaleidot725.texteditor.state.TextEditorState
 @Composable
 fun TextEditor(
     textEditorState: TextEditorState,
-    onUpdatedState: (TextEditorState) -> Unit,
+    onUpdatedState: () -> Unit,
     modifier: Modifier = Modifier,
     decorationBox: @Composable (
         index: Int,
-        isSelected: Boolean, innerTextField: @Composable (modifier: Modifier) -> Unit
-    ) -> Unit = { _, _, innerTextField ->  innerTextField(Modifier) },
+        isSelected: Boolean, innerTextField: @Composable (index: Int, isSelected: Boolean, modifier: Modifier) -> Unit
+    ) -> Unit = { index, isSelected, innerTextField ->  innerTextField(index, isSelected, Modifier) },
 ) {
     LazyColumn(modifier = modifier) {
         itemsIndexed(
             items = textEditorState.toEditable().fields,
             key = { _, item -> item.id }
         ) { index, textFieldState ->
-            val focusRequester by remember { mutableStateOf(FocusRequester()) }
+            decorationBox(index, textFieldState.isSelected) { index, isSelected, modifier ->
+                val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
-            LaunchedEffect(textFieldState.isSelected) {
-                if (textFieldState.isSelected) focusRequester.requestFocus()
-            }
+                LaunchedEffect(isSelected) {
+                    if (isSelected) focusRequester.requestFocus()
+                }
 
-            decorationBox(index, textFieldState.isSelected) { modifier ->
                 TextField(
                     textFieldValue = textFieldState.value,
                     onUpdateText = { newText ->
                         textEditorState.toEditable()
                             .updateField(targetIndex = index, textFieldValue = newText)
-                        onUpdatedState(textEditorState)
+                        onUpdatedState()
                     },
                     onAddNewLine = { newText ->
                         textEditorState.toEditable()
                             .splitField(targetIndex = index, textFieldValue = newText)
-                        onUpdatedState(textEditorState)
+                        onUpdatedState()
                     },
                     onDeleteNewLine = {
                         textEditorState.toEditable().deleteField(targetIndex = index)
-                        onUpdatedState(textEditorState)
+                        onUpdatedState()
                     },
                     focusRequester = focusRequester,
                     onFocus = {
                         if (textEditorState.selectedIndices.contains(index)) return@TextField
                         textEditorState.toEditable().selectField(targetIndex = index)
-                        onUpdatedState(textEditorState)
+                        onUpdatedState()
                     },
                     modifier = modifier
                 )

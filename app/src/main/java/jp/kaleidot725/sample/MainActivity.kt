@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
                 var textEditorState by rememberTextEditorState(lines = DemoText.lines())
                 TextEditor(
                     textEditorState = textEditorState,
-                    onUpdatedState = { textEditorState = it },
+                    onUpdatedState = { },
                     modifier = Modifier.fillMaxSize()
                 ) { index, isSelected, innerTextField ->
                     val color =if (isSelected) Color.Green else Color.White

@@ -9,11 +9,12 @@
     Text Editor Compose
 </h1>
 
-<h3  align="center">
+<h3 align="center">
     A simple text editor for Jetpack Compose
-    <br><br>
-    
-    <img width=400 src="https://github.com/kaleidot725/text-editor-compose/blob/main/demo.gif?raw=true">
+</h3>
+
+<h3 align="center">
+    <img align="center" width=400 src="https://github.com/kaleidot725/text-editor-compose/blob/main/demo.gif">
 </h3>
 
 ## Features

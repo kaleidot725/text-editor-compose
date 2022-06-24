@@ -14,11 +14,18 @@ import androidx.compose.ui.platform.LocalFocusManager
 import jp.kaleidot725.texteditor.state.EditableTextEditorState
 import jp.kaleidot725.texteditor.state.TextEditorState
 
+typealias DecorationBoxComposable = @Composable (
+    index: Int,
+    isSelected: Boolean,
+    innerTextField: @Composable (modifier: Modifier) -> Unit
+) -> Unit
+
 @Composable
 fun TextEditor(
     textEditorState: TextEditorState,
     onUpdatedState: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
     LazyColumn(modifier = modifier) {
         itemsIndexed(
@@ -33,32 +40,34 @@ fun TextEditor(
                 if (textFieldState.isSelected) focusRequester.requestFocus()
             }
 
-            TextField(
-                textFieldValue = textFieldState.value,
-                onUpdateText = { newText ->
-                    textEditorState.toEditable()
-                        .updateField(targetIndex = index, textFieldValue = newText)
-                    onUpdatedState()
-                },
-                onAddNewLine = { newText ->
-                    textEditorState.toEditable()
-                        .splitField(targetIndex = index, textFieldValue = newText)
-                    onUpdatedState()
-                },
-                onDeleteNewLine = {
-                    textEditorState.toEditable().deleteField(targetIndex = index)
-                    onUpdatedState()
+            decorationBox(index, textFieldState.isSelected) {
+                TextField(
+                    textFieldValue = textFieldState.value,
+                    onUpdateText = { newText ->
+                        textEditorState.toEditable()
+                            .updateField(targetIndex = index, textFieldValue = newText)
+                        onUpdatedState()
+                    },
+                    onAddNewLine = { newText ->
+                        textEditorState.toEditable()
+                            .splitField(targetIndex = index, textFieldValue = newText)
+                        onUpdatedState()
+                    },
+                    onDeleteNewLine = {
+                        textEditorState.toEditable().deleteField(targetIndex = index)
+                        onUpdatedState()
 
-                    // workaround: prevent to hide ime when editor delete newline
-                    focusManager.moveFocus(FocusDirection.Up)
-                },
-                focusRequester = focusRequester,
-                onFocus = {
-                    if (textEditorState.selectedIndices.contains(index)) return@TextField
-                    textEditorState.toEditable().selectField(targetIndex = index)
-                    onUpdatedState()
-                }
-            )
+                        // workaround: prevent to hide ime when editor delete newline
+                        focusManager.moveFocus(FocusDirection.Up)
+                    },
+                    focusRequester = focusRequester,
+                    onFocus = {
+                        if (textEditorState.selectedIndices.contains(index)) return@TextField
+                        textEditorState.toEditable().selectField(targetIndex = index)
+                        onUpdatedState()
+                    }
+                )
+            }
         }
     }
 }

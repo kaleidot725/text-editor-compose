@@ -13,7 +13,7 @@
     A simple text editor for Jetpack Compose
     <br><br>
     
-    <img width=400 src="./demo.gif">
+    <img width=400 src="https://github.com/kaleidot725/text-editor-compose/blob/main/demo.gif?raw=true">
 </h3>
 
 ## Features
@@ -28,7 +28,7 @@
 
 ### Step 1. Add the JitPack repository to your build file
 
-```
+```gradle
 allprojects {
 	repositories {
 		...

@@ -21,8 +21,8 @@
 
 - [x] Edit multiple line text
 - [x] Insert and delete newline
-- [x] Get Selected text index
-- [x] Display line number.
+- [x] Get selected line index
+- [x] Display line number
 - [ ] Select mutilple line
 
 ## Import to your project

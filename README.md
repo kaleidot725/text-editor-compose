@@ -22,7 +22,7 @@
 - [x] Get selected line index
 - [x] Display line number
 - [ ] Select mutilple line
-
+- [ ] Support physical keyboard
 ## Import to your project
 
 ### Step 1. Add the JitPack repository to your build file

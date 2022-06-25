@@ -23,11 +23,14 @@
 - [x] Display line number
 - [ ] Select mutilple line
 - [ ] Support physical keyboard
-## Import to your project
 
-### Step 1. Add the JitPack repository to your build file
+## Usage
 
-```gradle
+This library is easy to use, just follow the steps below to add a dependency and write codes.
+
+### Step 1: Add the JitPack repository to build.gradle
+
+```groovy
 allprojects {
 	repositories {
 		...
@@ -36,15 +39,35 @@ allprojects {
 }
 ```
 
-### Step 2. Add the dependency
+### Step 2: Add the library to the dependencies
 
-```gradle
+```groovy
 dependencies {
-	implementation 'com.github.kaleidot725:text-editor-compose:${latest-version}'
+	implementation 'com.github.kaleidot725:text-editor-compose:0.1.0'
 }
 ```
 
-## Sample
+### Step 3: Declare TextEditor & TextEditorState
+
+```kotlin
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            SampleTheme {
+                val textEditorState by rememberTextEditorState(lines = DemoText.lines())
+                TextEditor(
+                    textEditorState = textEditorState, 
+                    onUpdatedState = { },              
+                    modifier = Modifier.fillMaxSize() 
+                )
+            }
+        }
+    }
+}
+```
+
+### Step 4: Customize what each row displays
 
 ```kotlin
 class MainActivity : ComponentActivity() {
@@ -55,16 +78,17 @@ class MainActivity : ComponentActivity() {
                 val textEditorState by rememberTextEditorState(lines = DemoText.lines())
                 TextEditor(
                     textEditorState = textEditorState,
-                    onUpdatedState = { /** Save Action */ },
-                    modifier = Modifier.fillMaxSize()
-                ) { index, isSelected, innerTextField ->
-                    val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
-                    Row(modifier = Modifier.background(backgroundColor)) {
-                        Text(text = (index + 1).toString().padStart(3, '0'))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        innerTextField(modifier = Modifier.fillMaxWidth())
+                    onUpdatedState = { },
+                    modifier = Modifier.fillMaxSize(),
+                    decorationBox = { index, isSelected, innerTextField ->
+                        val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White           
+　　　　　　　　　　　　　　 Row(modifier = Modifier.background(backgroundColor)) {
+                            Text(text = (index + 1).toString().padStart(3, '0'))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            innerTextField(modifier = Modifier.fillMaxWidth())
+                        }
                     }
-                }
+                )
             }
         }
     }

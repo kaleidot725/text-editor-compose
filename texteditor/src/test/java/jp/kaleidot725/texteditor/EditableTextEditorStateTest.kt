@@ -320,4 +320,63 @@ class EditableTextEditorStateTest : StringSpec({
         state.fields[1].isSelected shouldBe false
         state.fields[2].isSelected shouldBe false
     }
+    "delete_selected_line" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+
+        state.selectField(1)
+        state.fields.count() shouldBe 3
+        state.fields[0].isSelected shouldBe false
+        state.fields[0].value.text shouldBe "0"
+        state.fields[1].isSelected shouldBe true
+        state.fields[1].value.text shouldBe "1"
+        state.fields[2].isSelected shouldBe false
+        state.fields[2].value.text shouldBe "2"
+
+        state.deleteSelectedLines()
+
+        state.fields.count() shouldBe 2
+        state.fields[0].isSelected shouldBe false
+        state.fields[0].value.text shouldBe "0"
+        state.fields[1].isSelected shouldBe false
+        state.fields[1].value.text shouldBe "2"
+        state.selectedIndices.count() shouldBe 0
+    }
+    "delete_selected_line_on_multiple_selection" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+
+        state.enableMultipleSelectionMode(true)
+        state.isMultipleSelectionMode.value shouldBe true
+        state.selectField(1)
+        state.selectField(2)
+
+        state.fields.count() shouldBe 3
+        state.fields[0].isSelected shouldBe true
+        state.fields[0].value.text shouldBe "0"
+        state.fields[1].isSelected shouldBe true
+        state.fields[1].value.text shouldBe "1"
+        state.fields[2].isSelected shouldBe true
+        state.fields[2].value.text shouldBe "2"
+
+        state.deleteSelectedLines()
+        state.fields.count() shouldBe 0
+        state.selectedIndices.count() shouldBe 0
+    }
+    "get_selected_text" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+
+        state.selectField(1)
+        val actual = state.getSelectedText()
+        actual shouldBe "1"
+    }
+    "get_selected_text_on_multiple_selection" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+
+        state.enableMultipleSelectionMode(true)
+        state.isMultipleSelectionMode.value shouldBe true
+
+        state.selectField(1)
+        state.selectField(2)
+        val actual = state.getSelectedText()
+        actual shouldBe "0\n1\n2"
+    }
 })

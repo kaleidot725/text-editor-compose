@@ -12,5 +12,5 @@ interface TextEditorState {
     fun getAllText(): String
     fun enableMultipleSelectionMode(value: Boolean)
     fun getSelectedText(): String
-    fun deleteSelectedLinesText(): String
+    fun deleteSelectedLines()
 }

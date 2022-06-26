@@ -17,7 +17,7 @@ internal class EditableTextEditorState(
     override val lines get() = _lines.toList()
 
     private val _selectedIndices = (selectedIndices ?: listOf(-1)).toMutableStateList()
-    override val selectedIndices = _selectedIndices.toList()
+    override val selectedIndices get() = _selectedIndices.toList()
 
     private var _isMultipleSelectionMode = mutableStateOf(false)
     override val isMultipleSelectionMode get() = _isMultipleSelectionMode
@@ -27,12 +27,6 @@ internal class EditableTextEditorState(
 
     init {
         selectField(0)
-    }
-
-    override fun getAllText(): String {
-        return lines.foldIndexed("") { index, acc, s ->
-            if (index == 0) acc + s else acc + "\n" + s
-        }
     }
 
     fun splitField(targetIndex: Int, textFieldValue: TextFieldValue) {
@@ -116,12 +110,23 @@ internal class EditableTextEditorState(
         _isMultipleSelectionMode.value = value
     }
 
-    override fun getSelectedText(): String {
-        TODO("Not yet implemented")
+    override fun getAllText(): String {
+        return lines.foldIndexed("") { index, acc, s ->
+            if (index == 0) acc + s else acc + "\n" + s
+        }
     }
 
-    override fun deleteSelectedLinesText(): String {
-        TODO("Not yet implemented")
+    override fun getSelectedText(): String {
+        val targets = selectedIndices.mapNotNull { lines.getOrNull(it) }
+        return targets.foldIndexed("") { index, acc, s ->
+            if (index == 0) acc + s else acc + "\n" + s
+        }
+    }
+
+    override fun deleteSelectedLines() {
+        val targets = selectedIndices.mapNotNull { _fields.getOrNull(it) }
+        _fields.removeAll(targets)
+        _selectedIndices.clear()
     }
 
     private fun clearSelectedIndices() {

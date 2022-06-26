@@ -108,10 +108,10 @@ internal class EditableTextEditorState(
     }
 
     override fun enableMultipleSelectionMode(value: Boolean) {
-        if (isMultipleSelectionMode.value != value) {
-            _isMultipleSelectionMode.value = value
+        if (isMultipleSelectionMode.value && !value) {
             clearSelectedIndices()
         }
+        _isMultipleSelectionMode.value = value
     }
 
     private fun clearSelectedIndices() {

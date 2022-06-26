@@ -278,7 +278,7 @@ class EditableTextEditorStateTest : StringSpec({
 
         state.selectField(1)
         state.selectField(1)
-        state.fields[0].isSelected shouldBe false
+        state.fields[0].isSelected shouldBe true
         state.fields[1].isSelected shouldBe true
         state.fields[2].isSelected shouldBe false
     }
@@ -308,6 +308,13 @@ class EditableTextEditorStateTest : StringSpec({
 
         state.enableMultipleSelectionMode(false)
         state.fields[0].isSelected shouldBe false
+        state.fields[1].isSelected shouldBe false
+        state.fields[2].isSelected shouldBe false
+
+        state.selectField(0)
+        state.enableMultipleSelectionMode(true)
+        state.isMultipleSelectionMode.value shouldBe true
+        state.fields[0].isSelected shouldBe true
         state.fields[1].isSelected shouldBe false
         state.fields[2].isSelected shouldBe false
     }

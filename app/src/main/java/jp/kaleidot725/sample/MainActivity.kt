@@ -4,12 +4,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.Button
+import androidx.compose.material.Checkbox
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
@@ -28,16 +34,36 @@ class MainActivity : ComponentActivity() {
         setContent {
             SampleTheme {
                 val textEditorState by rememberTextEditorState(lines = DemoText.lines())
-                TextEditor(
-                    textEditorState = textEditorState,
-                    onUpdatedState = { /** Save Action */ },
-                    modifier = Modifier.fillMaxSize()
-                ) { index, isSelected, innerTextField ->
-                    val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
-                    Row(modifier = Modifier.background(backgroundColor)) {
-                        Text(text = (index + 1).toString().padStart(3, '0'))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        innerTextField(modifier = Modifier.fillMaxWidth())
+                /** Save Action */
+                Column {
+                    Row(modifier = Modifier.background(Color.LightGray).padding(8.dp)) {
+                        Text(
+                            text = "enable multiple selection mode",
+                            modifier = Modifier
+                                .weight(0.9f, true)
+                                .align(Alignment.CenterVertically)
+                        )
+                        Switch(
+                            checked = textEditorState.isMultipleSelectionMode.value,
+                            onCheckedChange = {
+                                textEditorState.enableMultipleSelectionMode(
+                                    !textEditorState.isMultipleSelectionMode.value
+                                )
+                            }
+                        )
+                    }
+
+                    TextEditor(
+                        textEditorState = textEditorState,
+                        onUpdatedState = { /** Save Action */ },
+                        modifier = Modifier.fillMaxSize()
+                    ) { index, isSelected, innerTextField ->
+                        val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
+                        Row(modifier = Modifier.background(backgroundColor)) {
+                            Text(text = (index + 1).toString().padStart(3, '0'))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            innerTextField(modifier = Modifier.weight(0.9f, fill = true))
+                        }
                     }
                 }
             }

@@ -12,6 +12,7 @@ class EditableTextEditorStateTest : StringSpec({
     "initialize_when_text_is_empty" {
         val state = EditableTextEditorState("".lines())
 
+        state.isMultipleSelectionMode.value shouldBe false
         state.fields.count() shouldBe 1
         state.fields[0].value shouldBe TextFieldValue(text = "")
         state.fields[0].isSelected shouldBe true
@@ -25,6 +26,7 @@ class EditableTextEditorStateTest : StringSpec({
         """.trimIndent().lines()
         )
 
+        state.isMultipleSelectionMode.value shouldBe false
         state.fields.count() shouldBe 3
         state.fields[0].value shouldBe TextFieldValue(text = "one")
         state.fields[0].isSelected shouldBe true
@@ -216,6 +218,7 @@ class EditableTextEditorStateTest : StringSpec({
     "select_field" {
         val state = EditableTextEditorState("0\n1\n2".lines())
 
+        state.isMultipleSelectionMode.value shouldBe false
         state.selectField(1)
         state.fields[0].isSelected shouldBe false
         state.fields[1].isSelected shouldBe true
@@ -234,19 +237,15 @@ class EditableTextEditorStateTest : StringSpec({
     "select_selected_field" {
         val state = EditableTextEditorState("0\n1\n2".lines())
 
+        state.isMultipleSelectionMode.value shouldBe false
         state.selectField(1)
         state.fields[0].isSelected shouldBe false
         state.fields[1].isSelected shouldBe true
         state.fields[2].isSelected shouldBe false
 
-        state.selectField(2)
+        state.selectField(1)
         state.fields[0].isSelected shouldBe false
-        state.fields[1].isSelected shouldBe false
-        state.fields[2].isSelected shouldBe true
-
-        state.selectField(0)
-        state.fields[0].isSelected shouldBe true
-        state.fields[1].isSelected shouldBe false
+        state.fields[1].isSelected shouldBe true
         state.fields[2].isSelected shouldBe false
     }
     "select_field_when_input_invalid_target_index" {
@@ -257,5 +256,59 @@ class EditableTextEditorStateTest : StringSpec({
         shouldThrow<InvalidParameterException> {
             state.selectField(3)
         }
+    }
+    "select_field_on_multiple_mode" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+
+        state.enableMultipleSelectionMode(true)
+        state.isMultipleSelectionMode.value shouldBe true
+
+        state.selectField(0)
+        state.selectField(1)
+        state.selectField(2)
+        state.fields[0].isSelected shouldBe true
+        state.fields[1].isSelected shouldBe true
+        state.fields[2].isSelected shouldBe true
+    }
+    "select_selected_field_on_multiple_mode" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+
+        state.enableMultipleSelectionMode(true)
+        state.isMultipleSelectionMode.value shouldBe true
+
+        state.selectField(1)
+        state.selectField(1)
+        state.fields[0].isSelected shouldBe false
+        state.fields[1].isSelected shouldBe true
+        state.fields[2].isSelected shouldBe false
+    }
+    "select_field_when_input_invalid_target_index_on_multiple_mode" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+
+        state.enableMultipleSelectionMode(true)
+        shouldThrow<InvalidParameterException> {
+            state.selectField(-1)
+        }
+        shouldThrow<InvalidParameterException> {
+            state.selectField(3)
+        }
+    }
+    "clear_selected_index_when_toggle_multiple_selection_mode" {
+        val state = EditableTextEditorState("0\n1\n2".lines())
+
+        state.enableMultipleSelectionMode(true)
+        state.isMultipleSelectionMode.value shouldBe true
+
+        state.selectField(0)
+        state.selectField(1)
+        state.selectField(2)
+        state.fields[0].isSelected shouldBe true
+        state.fields[1].isSelected shouldBe true
+        state.fields[2].isSelected shouldBe true
+
+        state.enableMultipleSelectionMode(false)
+        state.fields[0].isSelected shouldBe false
+        state.fields[1].isSelected shouldBe false
+        state.fields[2].isSelected shouldBe false
     }
 })

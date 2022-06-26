@@ -1,7 +1,7 @@
 package jp.kaleidot725.texteditor.state
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -17,7 +17,10 @@ internal class EditableTextEditorState(
     override val lines get() = _lines.toList()
 
     private val _selectedIndices = (selectedIndices ?: listOf(-1)).toMutableStateList()
-    override val selectedIndices: List<Int> = _selectedIndices.toList()
+    override val selectedIndices = _selectedIndices.toList()
+
+    private var _isMultipleSelectionMode = mutableStateOf(false)
+    override val isMultipleSelectionMode get() = _isMultipleSelectionMode
 
     private val _fields = (fields ?: lines.createInitTextFieldStates()).toMutableStateList()
     val fields get() = _fields.toList()
@@ -99,18 +102,28 @@ internal class EditableTextEditorState(
             throw InvalidParameterException("targetIndex out of range($targetIndex)")
         }
 
-        _selectedIndices
-            .filter { _fields.getOrNull(it) != null }
-            .forEach { index -> _fields[index] = _fields[index].copy(isSelected = false) }
-        _selectedIndices.clear()
-
+        if (!isMultipleSelectionMode.value) clearSelectedIndices()
         _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
         _selectedIndices.add(targetIndex)
     }
 
+    override fun enableMultipleSelectionMode(value: Boolean) {
+        if (isMultipleSelectionMode.value != value) {
+            _isMultipleSelectionMode.value = value
+            clearSelectedIndices()
+        }
+    }
+
+    private fun clearSelectedIndices() {
+        _selectedIndices
+            .filter { _fields.getOrNull(it) != null }
+            .forEach { index -> _fields[index] = _fields[index].copy(isSelected = false) }
+        _selectedIndices.clear()
+    }
+
     private fun List<String>.createInitTextFieldStates(): List<TextFieldState> {
         if (this.isEmpty()) return listOf(TextFieldState(isSelected = false))
-        return this.mapIndexed { index, s ->
+        return this.mapIndexed { _, s ->
             TextFieldState(
                 value = TextFieldValue(s, TextRange.Zero),
                 isSelected = false

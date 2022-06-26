@@ -2,18 +2,12 @@ package jp.kaleidot725.texteditor.view
 
 import android.view.KeyEvent.KEYCODE_DEL
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -24,11 +18,11 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun TextField(
     textFieldValue: TextFieldValue,
+    enabled: Boolean,
     onUpdateText: (TextFieldValue) -> Unit,
     onAddNewLine: (TextFieldValue) -> Unit,
     focusRequester: FocusRequester,
@@ -41,6 +35,7 @@ internal fun TextField(
     Box(modifier = modifier) {
         BasicTextField(
             value = currentTextField,
+            enabled = enabled,
             onValueChange = {
                 if (it.text.contains('\n')) onAddNewLine(it) else onUpdateText(it)
             },

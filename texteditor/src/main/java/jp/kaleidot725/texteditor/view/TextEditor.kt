@@ -1,5 +1,6 @@
 package jp.kaleidot725.texteditor.view
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
@@ -27,6 +28,8 @@ fun TextEditor(
     modifier: Modifier = Modifier,
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
+    val isMultipleSelectionMode by textEditorState.isMultipleSelectionMode
+
     LazyColumn(modifier = modifier) {
         itemsIndexed(
             items = textEditorState.toEditable().fields,
@@ -43,6 +46,7 @@ fun TextEditor(
             decorationBox(index, textFieldState.isSelected) {
                 TextField(
                     textFieldValue = textFieldState.value,
+                    enabled = !isMultipleSelectionMode,
                     onUpdateText = { newText ->
                         textEditorState.toEditable()
                             .updateField(targetIndex = index, textFieldValue = newText)
@@ -62,7 +66,11 @@ fun TextEditor(
                     },
                     focusRequester = focusRequester,
                     onFocus = {
-                        if (textEditorState.selectedIndices.contains(index)) return@TextField
+                        textEditorState.toEditable().selectField(targetIndex = index)
+                        onUpdatedState()
+                    },
+                    modifier = Modifier.clickable {
+                        if (!isMultipleSelectionMode) return@clickable
                         textEditorState.toEditable().selectField(targetIndex = index)
                         onUpdatedState()
                     }

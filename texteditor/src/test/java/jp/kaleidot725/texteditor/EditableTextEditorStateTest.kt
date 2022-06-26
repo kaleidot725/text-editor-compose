@@ -44,7 +44,7 @@ class EditableTextEditorStateTest : StringSpec({
         val state = EditableTextEditorState("a\nb\nc".lines())
         state.splitField(2, TextFieldValue("c\n"))
         state.updateField(3, TextFieldValue("d"))
-        val actual = state.createText()
+        val actual = state.getAllText()
         actual shouldBe "a\nb\nc\nd"
     }
     "split_field_when_field_is_empty" {
@@ -263,7 +263,6 @@ class EditableTextEditorStateTest : StringSpec({
         state.enableMultipleSelectionMode(true)
         state.isMultipleSelectionMode.value shouldBe true
 
-        state.selectField(0)
         state.selectField(1)
         state.selectField(2)
         state.fields[0].isSelected shouldBe true
@@ -277,9 +276,13 @@ class EditableTextEditorStateTest : StringSpec({
         state.isMultipleSelectionMode.value shouldBe true
 
         state.selectField(1)
-        state.selectField(1)
         state.fields[0].isSelected shouldBe true
         state.fields[1].isSelected shouldBe true
+        state.fields[2].isSelected shouldBe false
+
+        state.selectField(1)
+        state.fields[0].isSelected shouldBe true
+        state.fields[1].isSelected shouldBe false
         state.fields[2].isSelected shouldBe false
     }
     "select_field_when_input_invalid_target_index_on_multiple_mode" {
@@ -299,7 +302,6 @@ class EditableTextEditorStateTest : StringSpec({
         state.enableMultipleSelectionMode(true)
         state.isMultipleSelectionMode.value shouldBe true
 
-        state.selectField(0)
         state.selectField(1)
         state.selectField(2)
         state.fields[0].isSelected shouldBe true

@@ -29,7 +29,7 @@ internal class EditableTextEditorState(
         selectField(0)
     }
 
-    override fun createText(): String {
+    override fun getAllText(): String {
         return lines.foldIndexed("") { index, acc, s ->
             if (index == 0) acc + s else acc + "\n" + s
         }
@@ -103,7 +103,9 @@ internal class EditableTextEditorState(
         }
 
         if (!isMultipleSelectionMode.value) clearSelectedIndices()
-        _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
+
+        val isSelected = if (isMultipleSelectionMode.value) !_fields[targetIndex].isSelected else true
+        _fields[targetIndex] = _fields[targetIndex].copy(isSelected = isSelected)
         _selectedIndices.add(targetIndex)
     }
 
@@ -112,6 +114,14 @@ internal class EditableTextEditorState(
             clearSelectedIndices()
         }
         _isMultipleSelectionMode.value = value
+    }
+
+    override fun getSelectedText(): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun deleteSelectedLinesText(): String {
+        TODO("Not yet implemented")
     }
 
     private fun clearSelectedIndices() {

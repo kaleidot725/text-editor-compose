@@ -9,6 +9,8 @@ interface TextEditorState {
     val selectedIndices: List<Int>
     val isMultipleSelectionMode: State<Boolean>
 
-    fun createText(): String
+    fun getAllText(): String
     fun enableMultipleSelectionMode(value: Boolean)
+    fun getSelectedText(): String
+    fun deleteSelectedLinesText(): String
 }

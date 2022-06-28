@@ -223,16 +223,19 @@ class EditableTextEditorStateTest : StringSpec({
         state.fields[0].isSelected shouldBe false
         state.fields[1].isSelected shouldBe true
         state.fields[2].isSelected shouldBe false
+        state.selectedIndices.count() shouldBe 1
 
         state.selectField(2)
         state.fields[0].isSelected shouldBe false
         state.fields[1].isSelected shouldBe false
         state.fields[2].isSelected shouldBe true
+        state.selectedIndices.count() shouldBe 1
 
         state.selectField(0)
         state.fields[0].isSelected shouldBe true
         state.fields[1].isSelected shouldBe false
         state.fields[2].isSelected shouldBe false
+        state.selectedIndices.count() shouldBe 1
     }
     "select_selected_field" {
         val state = EditableTextEditorState("0\n1\n2".lines())
@@ -242,11 +245,13 @@ class EditableTextEditorStateTest : StringSpec({
         state.fields[0].isSelected shouldBe false
         state.fields[1].isSelected shouldBe true
         state.fields[2].isSelected shouldBe false
+        state.selectedIndices.count() shouldBe 1
 
         state.selectField(1)
         state.fields[0].isSelected shouldBe false
         state.fields[1].isSelected shouldBe true
         state.fields[2].isSelected shouldBe false
+        state.selectedIndices.count() shouldBe 1
     }
     "select_field_when_input_invalid_target_index" {
         val state = EditableTextEditorState("0\n1\n2".lines())
@@ -268,6 +273,7 @@ class EditableTextEditorStateTest : StringSpec({
         state.fields[0].isSelected shouldBe true
         state.fields[1].isSelected shouldBe true
         state.fields[2].isSelected shouldBe true
+        state.selectedIndices.count() shouldBe 3
     }
     "select_selected_field_on_multiple_mode" {
         val state = EditableTextEditorState("0\n1\n2".lines())
@@ -279,11 +285,13 @@ class EditableTextEditorStateTest : StringSpec({
         state.fields[0].isSelected shouldBe true
         state.fields[1].isSelected shouldBe true
         state.fields[2].isSelected shouldBe false
+        state.selectedIndices.count() shouldBe 2
 
         state.selectField(1)
         state.fields[0].isSelected shouldBe true
         state.fields[1].isSelected shouldBe false
         state.fields[2].isSelected shouldBe false
+        state.selectedIndices.count() shouldBe 1
     }
     "select_field_when_input_invalid_target_index_on_multiple_mode" {
         val state = EditableTextEditorState("0\n1\n2".lines())

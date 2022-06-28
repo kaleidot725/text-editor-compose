@@ -96,11 +96,15 @@ internal class EditableTextEditorState(
             throw InvalidParameterException("targetIndex out of range($targetIndex)")
         }
 
-        if (!isMultipleSelectionMode.value) clearSelectedIndices()
-
-        val isSelected = if (isMultipleSelectionMode.value) !_fields[targetIndex].isSelected else true
-        _fields[targetIndex] = _fields[targetIndex].copy(isSelected = isSelected)
-        _selectedIndices.add(targetIndex)
+        if (isMultipleSelectionMode.value) {
+            val isSelected = !_fields[targetIndex].isSelected
+            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = isSelected)
+            if (isSelected) _selectedIndices.add(targetIndex) else _selectedIndices.remove(targetIndex)
+        } else {
+            clearSelectedIndices()
+            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
+            _selectedIndices.add(targetIndex)
+        }
     }
 
     override fun enableMultipleSelectionMode(value: Boolean) {
@@ -117,7 +121,7 @@ internal class EditableTextEditorState(
     }
 
     override fun getSelectedText(): String {
-        val targets = selectedIndices.mapNotNull { lines.getOrNull(it) }
+        val targets = selectedIndices.sortedBy { it }.mapNotNull { lines.getOrNull(it) }
         return targets.foldIndexed("") { index, acc, s ->
             if (index == 0) acc + s else acc + "\n" + s
         }

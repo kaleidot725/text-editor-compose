@@ -115,19 +115,7 @@ private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
 
     Row(modifier = Modifier.padding(8.dp)) {
         Text(
-            text = "Delete selected lines",
-            modifier = Modifier
-                .weight(0.9f, true)
-                .align(Alignment.CenterVertically)
-        )
-        Button(onClick = { textEditorState.deleteSelectedLines() }) {
-            Text(text = "EXECUTE")
-        }
-    }
-
-    Row(modifier = Modifier.padding(8.dp)) {
-        Text(
-            text = "Get selected text",
+            text = "Copy selected lines",
             modifier = Modifier
                 .weight(0.9f, true)
                 .align(Alignment.CenterVertically)
@@ -135,14 +123,27 @@ private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
         Button(
             onClick = {
                 val text = textEditorState.getSelectedText()
+                textEditorState.enableMultipleSelectionMode(false)
+
                 clipboardManager.setText(AnnotatedString(text))
-                Toast.makeText(
-                    context,
-                    "Copy selected text to clipboard",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(context, "Copy selected text to clipboard", Toast.LENGTH_SHORT).show()
             }
         ) {
+            Text(text = "EXECUTE")
+        }
+    }
+
+    Row(modifier = Modifier.padding(8.dp)) {
+        Text(
+            text = "Delete selected lines",
+            modifier = Modifier
+                .weight(0.9f, true)
+                .align(Alignment.CenterVertically)
+        )
+        Button(onClick = {
+            textEditorState.deleteSelectedLines()
+            textEditorState.enableMultipleSelectionMode(false)
+        }) {
             Text(text = "EXECUTE")
         }
     }

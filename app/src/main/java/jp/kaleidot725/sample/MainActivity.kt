@@ -38,10 +38,7 @@ class MainActivity : ComponentActivity() {
             SampleTheme {
                 val textEditorState by rememberTextEditorState(lines = DemoText.lines())
                 Column {
-                    MultipleSelectionSwitch(textEditorState)
-                    GetSelectedTextButton(textEditorState)
-                    DeleteSelectedLineButton(textEditorState)
-
+                    TextEditorMenu(textEditorState = textEditorState)
                     TextEditor(
                         textEditorState = textEditorState,
                         onUpdatedState = { /** Save Action */ },
@@ -95,7 +92,10 @@ The first commercially available smartphone running Android was the HTC Dream, a
 """.trimIndent()
 
 @Composable
-private fun MultipleSelectionSwitch(textEditorState: TextEditorState) {
+private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
+    val context: Context = LocalContext.current
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
+
     Row(modifier = Modifier.padding(8.dp)) {
         Text(
             text = "Enable multiple selection mode",
@@ -112,10 +112,7 @@ private fun MultipleSelectionSwitch(textEditorState: TextEditorState) {
             }
         )
     }
-}
 
-@Composable
-private fun DeleteSelectedLineButton(textEditorState: TextEditorState) {
     Row(modifier = Modifier.padding(8.dp)) {
         Text(
             text = "Delete selected lines",
@@ -127,12 +124,6 @@ private fun DeleteSelectedLineButton(textEditorState: TextEditorState) {
             Text(text = "EXECUTE")
         }
     }
-}
-
-@Composable
-private fun GetSelectedTextButton(textEditorState: TextEditorState) {
-    val context: Context = LocalContext.current
-    val clipboardManager: ClipboardManager = LocalClipboardManager.current
 
     Row(modifier = Modifier.padding(8.dp)) {
         Text(

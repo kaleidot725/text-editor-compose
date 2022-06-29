@@ -1,25 +1,34 @@
 package jp.kaleidot725.sample
 
+import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Scaffold
+import androidx.compose.material.Button
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import jp.kaleidot725.sample.ui.theme.SampleTheme
 import jp.kaleidot725.texteditor.extension.rememberTextEditorState
+import jp.kaleidot725.texteditor.state.TextEditorState
 import jp.kaleidot725.texteditor.view.TextEditor
 
 class MainActivity : ComponentActivity() {
@@ -28,16 +37,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             SampleTheme {
                 val textEditorState by rememberTextEditorState(lines = DemoText.lines())
-                TextEditor(
-                    textEditorState = textEditorState,
-                    onUpdatedState = { /** Save Action */ },
-                    modifier = Modifier.fillMaxSize()
-                ) { index, isSelected, innerTextField ->
-                    val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
-                    Row(modifier = Modifier.background(backgroundColor)) {
-                        Text(text = (index + 1).toString().padStart(3, '0'))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        innerTextField(modifier = Modifier.fillMaxWidth())
+                Column {
+                    TextEditorMenu(textEditorState = textEditorState)
+                    TextEditor(
+                        textEditorState = textEditorState,
+                        onUpdatedState = { /** Save Action */ },
+                        modifier = Modifier.fillMaxSize()
+                    ) { index, isSelected, innerTextField ->
+                        val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
+                        Row(modifier = Modifier.background(backgroundColor)) {
+                            Text(text = (index + 1).toString().padStart(3, '0'))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            innerTextField(modifier = Modifier.weight(0.9f, fill = true))
+                        }
                     }
                 }
             }
@@ -78,3 +90,61 @@ therefore a touchscreen cannot completely replace physical buttons".[34] By 2008
 both Nokia and BlackBerry announced touch-based smartphones to rival the iPhone 3G, and Android's focus eventually switched to just touchscreens. 
 The first commercially available smartphone running Android was the HTC Dream, also known as T-Mobile G1, announced on September 23, 2008.[35][36]
 """.trimIndent()
+
+@Composable
+private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
+    val context: Context = LocalContext.current
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
+
+    Row(modifier = Modifier.padding(8.dp)) {
+        Text(
+            text = "Enable multiple selection mode",
+            modifier = Modifier
+                .weight(0.9f, true)
+                .align(Alignment.CenterVertically)
+        )
+        Switch(
+            checked = textEditorState.isMultipleSelectionMode.value,
+            onCheckedChange = {
+                textEditorState.enableMultipleSelectionMode(
+                    !textEditorState.isMultipleSelectionMode.value
+                )
+            }
+        )
+    }
+
+    Row(modifier = Modifier.padding(8.dp)) {
+        Text(
+            text = "Copy selected lines",
+            modifier = Modifier
+                .weight(0.9f, true)
+                .align(Alignment.CenterVertically)
+        )
+        Button(
+            onClick = {
+                val text = textEditorState.getSelectedText()
+                textEditorState.enableMultipleSelectionMode(false)
+
+                clipboardManager.setText(AnnotatedString(text))
+                Toast.makeText(context, "Copy selected text to clipboard", Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            Text(text = "EXECUTE")
+        }
+    }
+
+    Row(modifier = Modifier.padding(8.dp)) {
+        Text(
+            text = "Delete selected lines",
+            modifier = Modifier
+                .weight(0.9f, true)
+                .align(Alignment.CenterVertically)
+        )
+        Button(onClick = {
+            textEditorState.deleteSelectedLines()
+            textEditorState.enableMultipleSelectionMode(false)
+        }) {
+            Text(text = "EXECUTE")
+        }
+    }
+}

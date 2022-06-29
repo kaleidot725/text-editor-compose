@@ -1,7 +1,7 @@
 package jp.kaleidot725.texteditor.state
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -17,19 +17,16 @@ internal class EditableTextEditorState(
     override val lines get() = _lines.toList()
 
     private val _selectedIndices = (selectedIndices ?: listOf(-1)).toMutableStateList()
-    override val selectedIndices: List<Int> = _selectedIndices.toList()
+    override val selectedIndices get() = _selectedIndices.toList()
+
+    private var _isMultipleSelectionMode = mutableStateOf(false)
+    override val isMultipleSelectionMode get() = _isMultipleSelectionMode
 
     private val _fields = (fields ?: lines.createInitTextFieldStates()).toMutableStateList()
     val fields get() = _fields.toList()
 
     init {
         selectField(0)
-    }
-
-    override fun createText(): String {
-        return lines.foldIndexed("") { index, acc, s ->
-            if (index == 0) acc + s else acc + "\n" + s
-        }
     }
 
     fun splitField(targetIndex: Int, textFieldValue: TextFieldValue) {
@@ -99,18 +96,53 @@ internal class EditableTextEditorState(
             throw InvalidParameterException("targetIndex out of range($targetIndex)")
         }
 
+        if (isMultipleSelectionMode.value) {
+            val isSelected = !_fields[targetIndex].isSelected
+            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = isSelected)
+            if (isSelected) _selectedIndices.add(targetIndex) else _selectedIndices.remove(targetIndex)
+        } else {
+            clearSelectedIndices()
+            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
+            _selectedIndices.add(targetIndex)
+        }
+    }
+
+    override fun enableMultipleSelectionMode(value: Boolean) {
+        if (isMultipleSelectionMode.value && !value) {
+            clearSelectedIndices()
+        }
+        _isMultipleSelectionMode.value = value
+    }
+
+    override fun getAllText(): String {
+        return lines.foldIndexed("") { index, acc, s ->
+            if (index == 0) acc + s else acc + "\n" + s
+        }
+    }
+
+    override fun getSelectedText(): String {
+        val targets = selectedIndices.sortedBy { it }.mapNotNull { lines.getOrNull(it) }
+        return targets.foldIndexed("") { index, acc, s ->
+            if (index == 0) acc + s else acc + "\n" + s
+        }
+    }
+
+    override fun deleteSelectedLines() {
+        val targets = selectedIndices.mapNotNull { _fields.getOrNull(it) }
+        _fields.removeAll(targets)
+        _selectedIndices.clear()
+    }
+
+    private fun clearSelectedIndices() {
         _selectedIndices
             .filter { _fields.getOrNull(it) != null }
             .forEach { index -> _fields[index] = _fields[index].copy(isSelected = false) }
         _selectedIndices.clear()
-
-        _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
-        _selectedIndices.add(targetIndex)
     }
 
     private fun List<String>.createInitTextFieldStates(): List<TextFieldState> {
         if (this.isEmpty()) return listOf(TextFieldState(isSelected = false))
-        return this.mapIndexed { index, s ->
+        return this.mapIndexed { _, s ->
             TextFieldState(
                 value = TextFieldValue(s, TextRange.Zero),
                 isSelected = false

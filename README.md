@@ -194,7 +194,7 @@ private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
 
 ### Get selected line index
 
-![Get selected line index(./docs/3.gif)
+![Get selected line index](./docs/3.gif)
 
 ### Display line number
 

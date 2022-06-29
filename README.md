@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
 }
 ```
 
-### Step 4: Customize row
+### Step 4: Customize text fields
 
 ```kotlin
 class MainActivity : ComponentActivity() {

@@ -27,8 +27,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import jp.kaleidot725.sample.ui.theme.SampleTheme
-import jp.kaleidot725.texteditor.extension.rememberTextEditorState
-import jp.kaleidot725.texteditor.state.TextEditorState
+import jp.kaleidot725.texteditor.extension.rememberTextEditorController
+import jp.kaleidot725.texteditor.controller.TextEditorController
 import jp.kaleidot725.texteditor.view.TextEditor
 
 class MainActivity : ComponentActivity() {
@@ -36,12 +36,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SampleTheme {
-                val textEditorState by rememberTextEditorState(lines = DemoText.lines())
+                val textEditorState by rememberTextEditorController(lines = DemoText.lines(), onChanged = { /** SAVE ACTION */ })
                 Column {
-                    TextEditorMenu(textEditorState = textEditorState)
+                    TextEditorMenu(textEditorController = textEditorState)
                     TextEditor(
-                        textEditorState = textEditorState,
-                        onUpdatedState = { /** Save Action */ },
+                        textEditorController = textEditorState,
                         modifier = Modifier.fillMaxSize()
                     ) { index, isSelected, innerTextField ->
                         val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
@@ -92,7 +91,7 @@ The first commercially available smartphone running Android was the HTC Dream, a
 """.trimIndent()
 
 @Composable
-private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
+private fun ColumnScope.TextEditorMenu(textEditorController: TextEditorController) {
     val context: Context = LocalContext.current
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
 
@@ -104,10 +103,10 @@ private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
                 .align(Alignment.CenterVertically)
         )
         Switch(
-            checked = textEditorState.isMultipleSelectionMode.value,
+            checked = textEditorController.isMultipleSelectionMode.value,
             onCheckedChange = {
-                textEditorState.enableMultipleSelectionMode(
-                    !textEditorState.isMultipleSelectionMode.value
+                textEditorController.setMultipleSelectionMode(
+                    !textEditorController.isMultipleSelectionMode.value
                 )
             }
         )
@@ -122,8 +121,8 @@ private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
         )
         Button(
             onClick = {
-                val text = textEditorState.getSelectedText()
-                textEditorState.enableMultipleSelectionMode(false)
+                val text = textEditorController.getSelectedText()
+                textEditorController.setMultipleSelectionMode(false)
 
                 clipboardManager.setText(AnnotatedString(text))
                 Toast.makeText(context, "Copy selected text to clipboard", Toast.LENGTH_SHORT).show()
@@ -141,8 +140,8 @@ private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
                 .align(Alignment.CenterVertically)
         )
         Button(onClick = {
-            textEditorState.deleteSelectedLines()
-            textEditorState.enableMultipleSelectionMode(false)
+            textEditorController.deleteSelectedLines()
+            textEditorController.setMultipleSelectionMode(false)
         }) {
             Text(text = "EXECUTE")
         }

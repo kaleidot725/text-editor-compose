@@ -1,32 +1,32 @@
-package jp.kaleidot725.texteditor.state
+package jp.kaleidot725.texteditor.controller
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import jp.kaleidot725.texteditor.state.TextFieldState
 import java.security.InvalidParameterException
 
 @Stable
-internal class EditableTextEditorState(
+internal class EditableTextEditorController(
     lines: List<String>,
     selectedIndices: List<Int>? = null,
     fields: List<TextFieldState>? = null,
-) : TextEditorState {
-    private val _lines = lines.toMutableStateList()
-    override val lines get() = _lines.toList()
-
-    private val _selectedIndices = (selectedIndices ?: listOf(-1)).toMutableStateList()
-    override val selectedIndices get() = _selectedIndices.toList()
+) : TextEditorController {
+    private var onChanged: () -> Unit = {}
 
     private var _isMultipleSelectionMode = mutableStateOf(false)
     override val isMultipleSelectionMode get() = _isMultipleSelectionMode
+
+    private val _selectedIndices = (selectedIndices ?: listOf(-1)).toMutableStateList()
+    val selectedIndices get() = _selectedIndices.toList()
 
     private val _fields = (fields ?: lines.createInitTextFieldStates()).toMutableStateList()
     val fields get() = _fields.toList()
 
     init {
-        selectField(0)
+        selectFieldInternal(0)
     }
 
     fun splitField(targetIndex: Int, textFieldValue: TextFieldValue) {
@@ -41,15 +41,14 @@ internal class EditableTextEditorState(
         val splitFieldValues = textFieldValue.splitTextsByNL()
         val firstSplitFieldValue = splitFieldValues.first()
         _fields[targetIndex] = _fields[targetIndex].copy(value = firstSplitFieldValue, isSelected = false)
-        _lines[targetIndex] = firstSplitFieldValue.text
 
         val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
         val newSplitFieldStates = newSplitFieldValues.map { TextFieldState(value = it, isSelected = false) }
         _fields.addAll(targetIndex + 1, newSplitFieldStates)
-        _lines.addAll(targetIndex + 1, newSplitFieldStates.map { it.value.text })
 
         val lastNewSplitFieldIndex = targetIndex + splitFieldValues.lastIndex
-        selectField(lastNewSplitFieldIndex)
+        selectFieldInternal(lastNewSplitFieldIndex)
+        onChanged()
     }
 
     fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
@@ -62,7 +61,7 @@ internal class EditableTextEditorState(
         }
 
         _fields[targetIndex] = _fields[targetIndex].copy(value = textFieldValue)
-        _lines[targetIndex] = textFieldValue.text
+        onChanged()
     }
 
     fun deleteField(targetIndex: Int) {
@@ -83,54 +82,57 @@ internal class EditableTextEditorState(
         val toTextFieldState = _fields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false)
 
         _fields[targetIndex - 1] = toTextFieldState
-        _lines[targetIndex - 1] = toTextFieldState.value.text
 
         _fields.removeAt(targetIndex)
-        _lines.removeAt(targetIndex)
 
-        selectField(targetIndex - 1)
+        selectFieldInternal(targetIndex - 1)
+        onChanged()
     }
 
     fun selectField(targetIndex: Int) {
-        if (targetIndex < 0 || fields.count() <= targetIndex) {
-            throw InvalidParameterException("targetIndex out of range($targetIndex)")
-        }
-
-        if (isMultipleSelectionMode.value) {
-            val isSelected = !_fields[targetIndex].isSelected
-            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = isSelected)
-            if (isSelected) _selectedIndices.add(targetIndex) else _selectedIndices.remove(targetIndex)
-        } else {
-            clearSelectedIndices()
-            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
-            _selectedIndices.add(targetIndex)
-        }
+        selectFieldInternal(targetIndex)
+        onChanged()
     }
 
-    override fun enableMultipleSelectionMode(value: Boolean) {
+    override fun setMultipleSelectionMode(value: Boolean) {
         if (isMultipleSelectionMode.value && !value) {
             clearSelectedIndices()
         }
         _isMultipleSelectionMode.value = value
+        onChanged()
+    }
+
+    override fun setOnChangedTextListener(onChanged: () -> Unit) {
+        this.onChanged = onChanged
     }
 
     override fun getAllText(): String {
-        return lines.foldIndexed("") { index, acc, s ->
+        return fields.map { it.value.text }.foldIndexed("") { index, acc, s ->
             if (index == 0) acc + s else acc + "\n" + s
         }
     }
 
     override fun getSelectedText(): String {
+        val lines = fields.map { it.value.text }
         val targets = selectedIndices.sortedBy { it }.mapNotNull { lines.getOrNull(it) }
         return targets.foldIndexed("") { index, acc, s ->
             if (index == 0) acc + s else acc + "\n" + s
         }
     }
 
+    override fun deleteAllLine() {
+        _fields.clear()
+        _fields.addAll(emptyList<String>().createInitTextFieldStates())
+        _selectedIndices.clear()
+        selectFieldInternal(0)
+        onChanged()
+    }
+
     override fun deleteSelectedLines() {
         val targets = selectedIndices.mapNotNull { _fields.getOrNull(it) }
         _fields.removeAll(targets)
         _selectedIndices.clear()
+        onChanged()
     }
 
     private fun clearSelectedIndices() {
@@ -147,6 +149,22 @@ internal class EditableTextEditorState(
                 value = TextFieldValue(s, TextRange.Zero),
                 isSelected = false
             )
+        }
+    }
+
+    private fun selectFieldInternal(targetIndex: Int) {
+        if (targetIndex < 0 || fields.count() <= targetIndex) {
+            throw InvalidParameterException("targetIndex out of range($targetIndex)")
+        }
+
+        if (isMultipleSelectionMode.value) {
+            val isSelected = !_fields[targetIndex].isSelected
+            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = isSelected)
+            if (isSelected) _selectedIndices.add(targetIndex) else _selectedIndices.remove(targetIndex)
+        } else {
+            clearSelectedIndices()
+            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = true)
+            _selectedIndices.add(targetIndex)
         }
     }
 

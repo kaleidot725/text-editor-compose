@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalFocusManager
-import jp.kaleidot725.texteditor.state.EditableTextEditorState
-import jp.kaleidot725.texteditor.state.TextEditorState
+import jp.kaleidot725.texteditor.controller.EditableTextEditorController
+import jp.kaleidot725.texteditor.controller.TextEditorController
 
 typealias DecorationBoxComposable = @Composable (
     index: Int,
@@ -24,19 +24,18 @@ typealias DecorationBoxComposable = @Composable (
 
 @Composable
 fun TextEditor(
-    textEditorState: TextEditorState,
-    onUpdatedState: () -> Unit,
+    textEditorController: TextEditorController,
     modifier: Modifier = Modifier,
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
-    val isMultipleSelectionMode by textEditorState.isMultipleSelectionMode
+    val isMultipleSelectionMode by textEditorController.isMultipleSelectionMode
 
     // workaround: prevent to hide ime when editor delete newline
     val focusManager = LocalFocusManager.current
 
     LazyColumn(modifier = modifier) {
         itemsIndexed(
-            items = textEditorState.toEditable().fields,
+            items = textEditorController.toEditable().fields,
             key = { _, item -> item.id }
         ) { index, textFieldState ->
 
@@ -54,34 +53,29 @@ fun TextEditor(
                         textFieldValue = textFieldState.value,
                         enabled = !isMultipleSelectionMode,
                         onUpdateText = { newText ->
-                            textEditorState.toEditable()
+                            textEditorController.toEditable()
                                 .updateField(targetIndex = index, textFieldValue = newText)
-                            onUpdatedState()
                         },
                         onAddNewLine = { newText ->
-                            textEditorState.toEditable()
+                            textEditorController.toEditable()
                                 .splitField(targetIndex = index, textFieldValue = newText)
-                            onUpdatedState()
                         },
                         onDeleteNewLine = {
-                            textEditorState.toEditable().deleteField(targetIndex = index)
-                            onUpdatedState()
+                            textEditorController.toEditable().deleteField(targetIndex = index)
 
                             // workaround: prevent to hide ime when editor delete newline
                             focusManager.moveFocus(FocusDirection.Up)
                         },
                         focusRequester = focusRequester,
                         onFocus = {
-                            textEditorState.toEditable().selectField(targetIndex = index)
-                            onUpdatedState()
+                            textEditorController.toEditable().selectField(targetIndex = index)
                         },
                         modifier = modifier.clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
                             if (!isMultipleSelectionMode) return@clickable
-                            textEditorState.toEditable().selectField(targetIndex = index)
-                            onUpdatedState()
+                            textEditorController.toEditable().selectField(targetIndex = index)
                         }
                     )
                 }
@@ -90,6 +84,6 @@ fun TextEditor(
     }
 }
 
-internal fun TextEditorState.toEditable(): EditableTextEditorState {
-    return this as EditableTextEditorState
+internal fun TextEditorController.toEditable(): EditableTextEditorController {
+    return this as EditableTextEditorController
 }

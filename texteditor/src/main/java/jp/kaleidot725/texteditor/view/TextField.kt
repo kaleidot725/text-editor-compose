@@ -1,6 +1,8 @@
 package jp.kaleidot725.texteditor.view
 
 import android.view.KeyEvent.KEYCODE_DEL
+import android.view.KeyEvent.KEYCODE_DPAD_DOWN
+import android.view.KeyEvent.KEYCODE_DPAD_UP
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -26,8 +28,10 @@ internal fun TextField(
     onUpdateText: (TextFieldValue) -> Unit,
     onAddNewLine: (TextFieldValue) -> Unit,
     focusRequester: FocusRequester,
-    onFocus: () -> Unit,
     onDeleteNewLine: () -> Unit,
+    onFocus: () -> Unit,
+    onUpFocus: () -> Unit,
+    onDownFocus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val currentTextField by rememberUpdatedState(newValue = textFieldValue)
@@ -45,9 +49,9 @@ internal fun TextField(
                 .focusRequester(focusRequester)
                 .onFocusChanged { if (it.isFocused) onFocus() }
                 .onPreviewKeyEvent { event ->
-                    onPreviewDelKeyEvent(event, currentTextField.selection) {
-                        onDeleteNewLine()
-                    }
+                    onPreviewDelKeyEvent(event, currentTextField.selection) { onDeleteNewLine() }
+                    onPreviewDownKeyEvent(event, currentTextField) { onDownFocus() }
+                    onPreviewUpKeyEvent(event, currentTextField.selection) { onUpFocus() }
                 }
         )
     }
@@ -61,6 +65,38 @@ private fun onPreviewDelKeyEvent(
     val isKeyUp = event.type == KeyEventType.KeyUp
     val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
     val isEmpty = selection == TextRange.Zero
+    return if (isKeyUp && isBackKey && isEmpty) {
+        invoke()
+        true
+    } else {
+        false
+    }
+}
+
+private fun onPreviewUpKeyEvent(
+    event: KeyEvent,
+    selection: TextRange,
+    invoke: () -> Unit
+): Boolean {
+    val isKeyUp = event.type == KeyEventType.KeyUp
+    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_UP
+    val isEmpty = selection == TextRange.Zero
+    return if (isKeyUp && isBackKey && isEmpty) {
+        invoke()
+        true
+    } else {
+        false
+    }
+}
+
+private fun onPreviewDownKeyEvent(
+    event: KeyEvent,
+    value: TextFieldValue,
+    invoke: () -> Unit
+): Boolean {
+    val isKeyUp = event.type == KeyEventType.KeyUp
+    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_DOWN
+    val isEmpty = value.selection == TextRange(value.text.count())
     return if (isKeyUp && isBackKey && isEmpty) {
         invoke()
         true

@@ -1,20 +1,27 @@
 package jp.kaleidot725.texteditor.view
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.platform.LocalFocusManager
 import jp.kaleidot725.texteditor.controller.EditableTextEditorController
 import jp.kaleidot725.texteditor.controller.TextEditorController
+import kotlinx.coroutines.launch
 
 typealias DecorationBoxComposable = @Composable (
     index: Int,
@@ -28,21 +35,19 @@ fun TextEditor(
     modifier: Modifier = Modifier,
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
+    val editableController by rememberUpdatedState(
+        newValue = textEditorController as EditableTextEditorController
+    )
     val isMultipleSelectionMode by textEditorController.isMultipleSelectionMode
 
-    // workaround: prevent to hide ime when editor delete newline
-    val focusManager = LocalFocusManager.current
-
-    LazyColumn(modifier = modifier) {
-        itemsIndexed(
-            items = textEditorController.toEditable().fields,
-            key = { _, item -> item.id }
-        ) { index, textFieldState ->
-
+    Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+        textEditorController.toEditable().fields.forEachIndexed { index, textFieldState ->
             val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
             LaunchedEffect(textFieldState.isSelected) {
-                if (textFieldState.isSelected) focusRequester.requestFocus()
+                if (textFieldState.isSelected) {
+                    focusRequester.requestFocus()
+                }
             }
 
             decorationBox(
@@ -52,31 +57,39 @@ fun TextEditor(
                     TextField(
                         textFieldValue = textFieldState.value,
                         enabled = !isMultipleSelectionMode,
+                        focusRequester = focusRequester,
                         onUpdateText = { newText ->
-                            textEditorController.toEditable()
-                                .updateField(targetIndex = index, textFieldValue = newText)
+                            editableController.updateField(
+                                targetIndex = index,
+                                textFieldValue = newText
+                            )
                         },
                         onAddNewLine = { newText ->
-                            textEditorController.toEditable()
-                                .splitField(targetIndex = index, textFieldValue = newText)
+                            editableController.splitField(
+                                targetIndex = index,
+                                textFieldValue = newText
+                            )
                         },
                         onDeleteNewLine = {
-                            textEditorController.toEditable().deleteField(targetIndex = index)
-
-                            // workaround: prevent to hide ime when editor delete newline
-                            focusManager.moveFocus(FocusDirection.Up)
+                            editableController.deleteField(targetIndex = index)
                         },
-                        focusRequester = focusRequester,
                         onFocus = {
-                            textEditorController.toEditable().selectField(targetIndex = index)
+                            editableController.selectField(index)
                         },
-                        modifier = modifier.clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            if (!isMultipleSelectionMode) return@clickable
-                            textEditorController.toEditable().selectField(targetIndex = index)
-                        }
+                        onUpFocus = {
+                            editableController.selectPreviousField()
+                        },
+                        onDownFocus = {
+                            editableController.selectNextField()
+                        },
+                        modifier = modifier
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                if (!isMultipleSelectionMode) return@clickable
+                                editableController.selectField(targetIndex = index)
+                            }
                     )
                 }
             )

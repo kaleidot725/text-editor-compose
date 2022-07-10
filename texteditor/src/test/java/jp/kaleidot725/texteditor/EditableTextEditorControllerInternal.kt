@@ -288,6 +288,91 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[1].isSelected shouldBe false
         controller.fields[2].isSelected shouldBe false
     }
+    "select_next_field" {
+        val controller = EditableTextEditorController("\n\n".lines())
+
+        controller.selectNextField()
+        controller.fields.count() shouldBe 3
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[0].value.text shouldBe ""
+        controller.fields[1].isSelected shouldBe true
+        controller.fields[1].value.text shouldBe ""
+        controller.fields[2].isSelected shouldBe false
+        controller.fields[2].value.text shouldBe ""
+    }
+    "select_next_field_on_max_lines" {
+        val controller = EditableTextEditorController("\n\n".lines())
+
+        controller.selectField(2)
+        controller.selectNextField()
+
+        controller.fields.count() shouldBe 3
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[0].value.text shouldBe ""
+        controller.fields[1].isSelected shouldBe false
+        controller.fields[1].value.text shouldBe ""
+        controller.fields[2].isSelected shouldBe true
+        controller.fields[2].value.text shouldBe ""
+    }
+    "select_next_field_on_multiple_selection" {
+        val controller = EditableTextEditorController("0\n1\n2".lines())
+        controller.setMultipleSelectionMode(true)
+        controller.isMultipleSelectionMode.value shouldBe true
+        controller.selectField(1)
+        controller.selectField(2)
+
+        controller.selectNextField()
+        controller.fields.count() shouldBe 3
+        controller.fields[0].isSelected shouldBe true
+        controller.fields[0].value.text shouldBe "0"
+        controller.fields[1].isSelected shouldBe true
+        controller.fields[1].value.text shouldBe "1"
+        controller.fields[2].isSelected shouldBe true
+        controller.fields[2].value.text shouldBe "2"
+    }
+    "select_previous_field" {
+        val controller = EditableTextEditorController("\n\n".lines())
+
+        controller.selectField(2)
+        controller.selectPreviousField()
+
+        controller.fields.count() shouldBe 3
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[0].value.text shouldBe ""
+        controller.fields[1].isSelected shouldBe true
+        controller.fields[1].value.text shouldBe ""
+        controller.fields[2].isSelected shouldBe false
+        controller.fields[2].value.text shouldBe ""
+    }
+    "select_previous_field_on_min_lines" {
+        val controller = EditableTextEditorController("\n\n".lines())
+
+        controller.selectPreviousField()
+
+        controller.fields.count() shouldBe 3
+        controller.fields[0].isSelected shouldBe true
+        controller.fields[0].value.text shouldBe ""
+        controller.fields[1].isSelected shouldBe false
+        controller.fields[1].value.text shouldBe ""
+        controller.fields[2].isSelected shouldBe false
+        controller.fields[2].value.text shouldBe ""
+    }
+    "select_previous_field_on_multiple_selection" {
+        val controller = EditableTextEditorController("0\n1\n2".lines())
+        controller.setMultipleSelectionMode(true)
+        controller.isMultipleSelectionMode.value shouldBe true
+        controller.selectField(1)
+        controller.selectField(2)
+
+        controller.selectPreviousField()
+        controller.fields.count() shouldBe 3
+        controller.fields[0].isSelected shouldBe true
+        controller.fields[0].value.text shouldBe "0"
+        controller.fields[1].isSelected shouldBe true
+        controller.fields[1].value.text shouldBe "1"
+        controller.fields[2].isSelected shouldBe true
+        controller.fields[2].value.text shouldBe "2"
+    }
 })
 
 class EditableTextEditorControllerExternalTest : StringSpec({

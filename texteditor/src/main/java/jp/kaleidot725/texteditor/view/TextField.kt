@@ -39,36 +39,35 @@ internal fun TextField(
     onDownFocus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val currentTextField by rememberUpdatedState(newValue = textFieldState.value)
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
     LaunchedEffect(textFieldState.isSelected) {
-        if (textFieldState.isSelected ) focusRequester.requestFocus()
+        if (textFieldState.isSelected) focusRequester.requestFocus()
     }
 
     Box(modifier = modifier
-        .focusable(false)
         .focusRequester(focusRequester)
         .onFocusChanged {
             if (it.isFocused) onFocus()
         }
         .onPreviewKeyEvent { event ->
-            onPreviewDelKeyEvent(event, currentTextField.selection) { onDeleteNewLine() }
-            onPreviewDownKeyEvent(event, currentTextField) { onDownFocus() }
-            onPreviewUpKeyEvent(event, currentTextField.selection) { onUpFocus() }
+            val value = textFieldState.value
+            val selection = textFieldState.value.selection
+            val b1 = onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }
+            val b2 = onPreviewDownKeyEvent(event, value) { onDownFocus() }
+            val b3 = onPreviewUpKeyEvent(event, selection) { onUpFocus() }
+            b1 || b2 || b3
         }
     ) {
         BasicTextField(
-            value = currentTextField,
+            value = textFieldState.value,
             enabled = enabled,
             onValueChange = {
-                if (currentTextField == it) return@BasicTextField
                 if (it.text.contains('\n')) onAddNewLine(it) else onUpdateText(it)
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .focusable(false)
         )
     }
 }
@@ -78,7 +77,7 @@ private fun onPreviewDelKeyEvent(
     selection: TextRange,
     invoke: () -> Unit
 ): Boolean {
-    val isKeyUp = event.type == KeyEventType.KeyUp
+    val isKeyUp = event.type == KeyEventType.KeyDown
     val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
     val isEmpty = selection == TextRange.Zero
     return if (isKeyUp && isBackKey && isEmpty) {
@@ -94,7 +93,7 @@ private fun onPreviewUpKeyEvent(
     selection: TextRange,
     invoke: () -> Unit
 ): Boolean {
-    val isKeyUp = event.type == KeyEventType.KeyUp
+    val isKeyUp = event.type == KeyEventType.KeyDown
     val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_UP
     val isEmpty = selection == TextRange.Zero
     return if (isKeyUp && isBackKey && isEmpty) {
@@ -110,7 +109,7 @@ private fun onPreviewDownKeyEvent(
     value: TextFieldValue,
     invoke: () -> Unit
 ): Boolean {
-    val isKeyUp = event.type == KeyEventType.KeyUp
+    val isKeyUp = event.type == KeyEventType.KeyDown
     val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_DOWN
     val isEmpty = value.selection == TextRange(value.text.count())
     return if (isKeyUp && isBackKey && isEmpty) {

@@ -7,6 +7,8 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import jp.kaleidot725.texteditor.state.TextFieldState
 import java.security.InvalidParameterException
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 @Stable
 internal class EditableTextEditorController(
@@ -25,102 +27,118 @@ internal class EditableTextEditorController(
     private val _fields = (fields ?: lines.createInitTextFieldStates()).toMutableStateList()
     val fields get() = _fields.toList()
 
+    private val lock = ReentrantLock()
+
     init {
         selectFieldInternal(0)
     }
 
     fun splitField(targetIndex: Int, textFieldValue: TextFieldValue) {
-        if (targetIndex < 0 || fields.count() <= targetIndex) {
-            throw InvalidParameterException("targetIndex out of range($targetIndex)")
+        lock.withLock {
+            if (targetIndex < 0 || fields.count() <= targetIndex) {
+                throw InvalidParameterException("targetIndex out of range($targetIndex)")
+            }
+
+            if (!textFieldValue.text.contains('\n')) {
+                throw InvalidParameterException("textFieldValue doesn't contains newline")
+            }
+
+            val splitFieldValues = textFieldValue.splitTextsByNL()
+            val firstSplitFieldValue = splitFieldValues.first()
+            _fields[targetIndex] =
+                _fields[targetIndex].copy(value = firstSplitFieldValue, isSelected = false)
+
+            val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
+            val newSplitFieldStates =
+                newSplitFieldValues.map { TextFieldState(value = it, isSelected = false) }
+            _fields.addAll(targetIndex + 1, newSplitFieldStates)
+
+            val lastNewSplitFieldIndex = targetIndex + splitFieldValues.lastIndex
+            selectFieldInternal(lastNewSplitFieldIndex)
+            onChanged()
         }
-
-        if (!textFieldValue.text.contains('\n')) {
-            throw InvalidParameterException("textFieldValue doesn't contains newline")
-        }
-
-        val splitFieldValues = textFieldValue.splitTextsByNL()
-        val firstSplitFieldValue = splitFieldValues.first()
-        _fields[targetIndex] =
-            _fields[targetIndex].copy(value = firstSplitFieldValue, isSelected = false)
-
-        val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
-        val newSplitFieldStates =
-            newSplitFieldValues.map { TextFieldState(value = it, isSelected = false) }
-        _fields.addAll(targetIndex + 1, newSplitFieldStates)
-
-        val lastNewSplitFieldIndex = targetIndex + splitFieldValues.lastIndex
-        selectFieldInternal(lastNewSplitFieldIndex)
-        onChanged()
     }
 
     fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
-        if (targetIndex < 0 || fields.count() <= targetIndex) {
-            throw InvalidParameterException("targetIndex out of range($targetIndex)")
-        }
+        lock.withLock {
+            if (targetIndex < 0 || fields.count() <= targetIndex) {
+                throw InvalidParameterException("targetIndex out of range($targetIndex)")
+            }
 
-        if (textFieldValue.text.contains('\n')) {
-            throw InvalidParameterException("textFieldValue contains newline")
-        }
+            if (textFieldValue.text.contains('\n')) {
+                throw InvalidParameterException("textFieldValue contains newline")
+            }
 
-        _fields[targetIndex] = _fields[targetIndex].copy(value = textFieldValue)
-        onChanged()
+            _fields[targetIndex] = _fields[targetIndex].copy(value = textFieldValue)
+            onChanged()
+        }
     }
 
     fun deleteField(targetIndex: Int) {
-        if (targetIndex < 0 || fields.count() <= targetIndex) {
-            throw InvalidParameterException("targetIndex out of range($targetIndex)")
+        lock.withLock {
+            if (targetIndex < 0 || fields.count() <= targetIndex) {
+                throw InvalidParameterException("targetIndex out of range($targetIndex)")
+            }
+
+            if (targetIndex == 0) {
+                return
+            }
+
+            val toText = _fields[targetIndex - 1].value.text
+            val fromText = _fields[targetIndex].value.text
+
+            val concatText = toText + fromText
+            val concatSelection = TextRange(toText.count())
+            val concatTextFieldValue = TextFieldValue(text = concatText, selection = concatSelection)
+            val toTextFieldState =
+                _fields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false)
+
+            _fields[targetIndex - 1] = toTextFieldState
+
+            _fields.removeAt(targetIndex)
+
+            selectFieldInternal(targetIndex - 1)
+            onChanged()
         }
-
-        if (targetIndex == 0) {
-            return
-        }
-
-        val toText = _fields[targetIndex - 1].value.text
-        val fromText = _fields[targetIndex].value.text
-
-        val concatText = toText + fromText
-        val concatSelection = TextRange(toText.count())
-        val concatTextFieldValue = TextFieldValue(text = concatText, selection = concatSelection)
-        val toTextFieldState =
-            _fields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false)
-
-        _fields[targetIndex - 1] = toTextFieldState
-
-        _fields.removeAt(targetIndex)
-
-        selectFieldInternal(targetIndex - 1)
-        onChanged()
     }
 
     fun selectField(targetIndex: Int) {
-        selectFieldInternal(targetIndex)
-        onChanged()
+        lock.withLock {
+            selectFieldInternal(targetIndex)
+            onChanged()
+        }
     }
 
     fun selectPreviousField() {
-        if (isMultipleSelectionMode.value) return
-        val selectedIndex = selectedIndices.firstOrNull() ?: return
-        if (selectedIndex == 0) return
+        lock.withLock {
+            if (isMultipleSelectionMode.value) return
+            val selectedIndex = selectedIndices.firstOrNull() ?: return
+            if (selectedIndex == 0) return
 
-        val previousIndex = selectedIndex - 1
-        selectFieldInternal(previousIndex, SelectionOption.LAST_POSITION)
+            val previousIndex = selectedIndex - 1
+            selectFieldInternal(previousIndex, SelectionOption.LAST_POSITION)
+        }
     }
 
     fun selectNextField() {
-        if (isMultipleSelectionMode.value) return
-        val selectedIndex = selectedIndices.firstOrNull() ?: return
-        if (selectedIndex == fields.lastIndex) return
+        lock.withLock {
+            if (isMultipleSelectionMode.value) return
+            val selectedIndex = selectedIndices.firstOrNull() ?: return
+            if (selectedIndex == fields.lastIndex) return
 
-        val nextIndex = selectedIndex + 1
-        selectFieldInternal(nextIndex, SelectionOption.FIRST_POSITION)
+            val nextIndex = selectedIndex + 1
+            selectFieldInternal(nextIndex, SelectionOption.FIRST_POSITION)
+        }
     }
 
     override fun setMultipleSelectionMode(value: Boolean) {
-        if (isMultipleSelectionMode.value && !value) {
-            clearSelectedIndices()
+        lock.withLock {
+            if (isMultipleSelectionMode.value && !value) {
+                clearSelectedIndices()
+            }
+            _isMultipleSelectionMode.value = value
+            onChanged()
         }
-        _isMultipleSelectionMode.value = value
-        onChanged()
     }
 
     override fun setOnChangedTextListener(onChanged: () -> Unit) {
@@ -142,18 +160,22 @@ internal class EditableTextEditorController(
     }
 
     override fun deleteAllLine() {
-        _fields.clear()
-        _fields.addAll(emptyList<String>().createInitTextFieldStates())
-        _selectedIndices.clear()
-        selectFieldInternal(0)
-        onChanged()
+        lock.withLock {
+            _fields.clear()
+            _fields.addAll(emptyList<String>().createInitTextFieldStates())
+            _selectedIndices.clear()
+            selectFieldInternal(0)
+            onChanged()
+        }
     }
 
     override fun deleteSelectedLines() {
-        val targets = selectedIndices.mapNotNull { _fields.getOrNull(it) }
-        _fields.removeAll(targets)
-        _selectedIndices.clear()
-        onChanged()
+        lock.withLock {
+            val targets = selectedIndices.mapNotNull { _fields.getOrNull(it) }
+            _fields.removeAll(targets)
+            _selectedIndices.clear()
+            onChanged()
+        }
     }
 
     private fun clearSelectedIndices() {

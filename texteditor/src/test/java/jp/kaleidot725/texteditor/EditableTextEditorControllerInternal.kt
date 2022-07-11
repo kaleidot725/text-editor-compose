@@ -37,14 +37,53 @@ class EditableTextEditorControllerInternalTest : StringSpec({
     }
     "create_text" {
         val controller = EditableTextEditorController("a\nb\nc".lines())
-        controller.splitField(2, TextFieldValue("c\n"))
+        controller.splitNewLine(2, TextFieldValue("c\n"))
         controller.updateField(3, TextFieldValue("d"))
         val actual = controller.getAllText()
         actual shouldBe "a\nb\nc\nd"
     }
+    "split_at_cursor" {
+        val controller = EditableTextEditorController("abcdef".lines())
+        controller.splitAtCursor(0, TextFieldValue("abcdef", TextRange(3)))
+
+        controller.fields.count() shouldBe 2
+        controller.fields[0].value shouldBe TextFieldValue(text = "abc", selection = TextRange(3))
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[1].value shouldBe TextFieldValue(text = "def")
+        controller.fields[1].isSelected shouldBe true
+    }
+    "split_at_cursor_zero" {
+        val controller = EditableTextEditorController("".lines())
+        controller.splitAtCursor(0, TextFieldValue("", TextRange(0)))
+
+        controller.fields.count() shouldBe 2
+        controller.fields[0].value shouldBe TextFieldValue(text = "")
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[1].value shouldBe TextFieldValue(text = "")
+        controller.fields[1].isSelected shouldBe true
+    }
+    "split_at_cursor_last" {
+        val controller = EditableTextEditorController("".lines())
+        controller.splitAtCursor(0, TextFieldValue("abcdef", TextRange(6)))
+
+        controller.fields.count() shouldBe 2
+        controller.fields[0].value shouldBe TextFieldValue(text = "abcdef", selection = TextRange(6))
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[1].value shouldBe TextFieldValue(text = "")
+        controller.fields[1].isSelected shouldBe true
+    }
+    "split_at_cursor_when_input_invalid_target_index" {
+        val controller = EditableTextEditorController("abc\ndef".lines())
+        shouldThrow<InvalidParameterException> {
+            controller.splitAtCursor(-1, TextFieldValue("xxxx"))
+        }
+        shouldThrow<InvalidParameterException> {
+            controller.splitAtCursor(2, TextFieldValue("yyyy"))
+        }
+    }
     "split_field_when_field_is_empty" {
         val controller = EditableTextEditorController("".lines())
-        controller.splitField(targetIndex = 0, TextFieldValue(text = "\n"))
+        controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "\n"))
 
         controller.fields.count() shouldBe 2
         controller.fields[0].value shouldBe TextFieldValue(text = "")
@@ -54,7 +93,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
     }
     "split_field_when_field_is_not_empty" {
         val controller = EditableTextEditorController("aaa".lines())
-        controller.splitField(targetIndex = 0, TextFieldValue(text = "aaa\n"))
+        controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "aaa\n"))
 
         controller.fields.count() shouldBe 2
         controller.fields[0].value shouldBe TextFieldValue(text = "aaa")
@@ -64,7 +103,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
     }
     "split_field_in_the_middle_of_the_field" {
         val controller = EditableTextEditorController("aaaa".lines())
-        controller.splitField(targetIndex = 0, TextFieldValue(text = "aa\naa"))
+        controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "aa\naa"))
 
         controller.fields.count() shouldBe 2
         controller.fields[0].value shouldBe TextFieldValue(text = "aa")
@@ -74,7 +113,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
     }
     "split_field_when_input_several_newlines" {
         val controller = EditableTextEditorController("".lines())
-        controller.splitField(targetIndex = 0, TextFieldValue(text = "a\nb\nc\nd"))
+        controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "a\nb\nc\nd"))
 
         controller.fields.count() shouldBe 4
         controller.fields[0].value shouldBe TextFieldValue(text = "a")
@@ -89,16 +128,16 @@ class EditableTextEditorControllerInternalTest : StringSpec({
     "split_field_when_input_invalid_target_index" {
         val controller = EditableTextEditorController("abc\ndef".lines())
         shouldThrow<InvalidParameterException> {
-            controller.splitField(-1, TextFieldValue("xxxx"))
+            controller.splitNewLine(-1, TextFieldValue("xxxx"))
         }
         shouldThrow<InvalidParameterException> {
-            controller.splitField(2, TextFieldValue("yyyy"))
+            controller.splitNewLine(2, TextFieldValue("yyyy"))
         }
     }
     "split_field_when_not_contain_new_line" {
         val controller = EditableTextEditorController("".lines())
         shouldThrow<InvalidParameterException> {
-            controller.splitField(0, TextFieldValue("xxxx"))
+            controller.splitNewLine(0, TextFieldValue("xxxx"))
         }
     }
     "update_field_when_field_is_empty" {
@@ -169,10 +208,10 @@ class EditableTextEditorControllerInternalTest : StringSpec({
     "delete_field_when_input_invalid_target_index" {
         val controller = EditableTextEditorController("abc\ndef".lines())
         shouldThrow<InvalidParameterException> {
-            controller.splitField(-1, TextFieldValue("xxxx"))
+            controller.splitNewLine(-1, TextFieldValue("xxxx"))
         }
         shouldThrow<InvalidParameterException> {
-            controller.splitField(2, TextFieldValue("yyyy"))
+            controller.splitNewLine(2, TextFieldValue("yyyy"))
         }
     }
     "select_field" {
@@ -390,7 +429,7 @@ class EditableTextEditorControllerExternalTest : StringSpec({
         var count = 0
 
         controller.setOnChangedTextListener { count++ }
-        controller.splitField(0, TextFieldValue("000\n000"))
+        controller.splitAtCursor(0, TextFieldValue("000\n000"))
         controller.deleteField(1)
         controller.updateField(0, TextFieldValue("000"))
         controller.setMultipleSelectionMode(true)

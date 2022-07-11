@@ -33,7 +33,7 @@ internal class EditableTextEditorController(
         selectFieldInternal(0)
     }
 
-    fun splitField(targetIndex: Int, textFieldValue: TextFieldValue) {
+    fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
             if (targetIndex < 0 || fields.count() <= targetIndex) {
                 throw InvalidParameterException("targetIndex out of range($targetIndex)")
@@ -58,6 +58,39 @@ internal class EditableTextEditorController(
             onChanged()
         }
     }
+
+    fun splitAtCursor(targetIndex: Int, textFieldValue: TextFieldValue) {
+        lock.withLock {
+            if (targetIndex < 0 || fields.count() <= targetIndex) {
+                throw InvalidParameterException("targetIndex out of range($targetIndex)")
+            }
+
+            val splitPosition = textFieldValue.selection.start
+            if (splitPosition < 0 || textFieldValue.text.length < splitPosition) {
+                throw InvalidParameterException("splitPosition out of range($splitPosition)")
+            }
+
+            val firstStart = 0
+            val firstEnd = if (splitPosition == 0) 0 else splitPosition
+            val first = textFieldValue.text.substring(firstStart, firstEnd)
+
+            val secondStart = if (splitPosition == 0) 0 else splitPosition
+            val secondEnd = textFieldValue.text.count()
+            val second = textFieldValue.text.substring(secondStart, secondEnd)
+
+            val firstValue = textFieldValue.copy(first)
+            val firstState = _fields[targetIndex].copy(value = firstValue, isSelected = false)
+            _fields[targetIndex] = firstState
+
+            val secondValue = TextFieldValue(second, TextRange.Zero)
+            val secondState = TextFieldState(value = secondValue, isSelected = false)
+            _fields.add(targetIndex + 1, secondState)
+
+            selectFieldInternal(targetIndex + 1)
+            onChanged()
+        }
+    }
+
 
     fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
@@ -89,7 +122,8 @@ internal class EditableTextEditorController(
 
             val concatText = toText + fromText
             val concatSelection = TextRange(toText.count())
-            val concatTextFieldValue = TextFieldValue(text = concatText, selection = concatSelection)
+            val concatTextFieldValue =
+                TextFieldValue(text = concatText, selection = concatSelection)
             val toTextFieldState =
                 _fields[targetIndex - 1].copy(value = concatTextFieldValue, isSelected = false)
 

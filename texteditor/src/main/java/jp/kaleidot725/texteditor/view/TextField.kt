@@ -3,6 +3,7 @@ package jp.kaleidot725.texteditor.view
 import android.view.KeyEvent.KEYCODE_DEL
 import android.view.KeyEvent.KEYCODE_DPAD_DOWN
 import android.view.KeyEvent.KEYCODE_DPAD_UP
+import android.view.KeyEvent.KEYCODE_ENTER
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,12 +27,14 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import jp.kaleidot725.texteditor.state.TextFieldState
+import org.w3c.dom.Text
 
 @Composable
 internal fun TextField(
     textFieldState: TextFieldState,
     enabled: Boolean,
     onUpdateText: (TextFieldValue) -> Unit,
+    onContainNewLine: (TextFieldValue) -> Unit,
     onAddNewLine: (TextFieldValue) -> Unit,
     onDeleteNewLine: () -> Unit,
     onFocus: () -> Unit,
@@ -39,6 +42,7 @@ internal fun TextField(
     onDownFocus: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val currentTextField by rememberUpdatedState(newValue = textFieldState.value)
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
     LaunchedEffect(textFieldState.isSelected) {
@@ -52,18 +56,20 @@ internal fun TextField(
         }
         .onPreviewKeyEvent { event ->
             val value = textFieldState.value
-            val selection = textFieldState.value.selection
+            val selection = currentTextField.selection
             val b1 = onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }
             val b2 = onPreviewDownKeyEvent(event, value) { onDownFocus() }
             val b3 = onPreviewUpKeyEvent(event, selection) { onUpFocus() }
-            b1 || b2 || b3
+            val b4 = onPreviewEnterKeyEvent(event, selection) { onAddNewLine(currentTextField) }
+            b1 || b2 || b3 || b4
         }
     ) {
         BasicTextField(
             value = textFieldState.value,
             enabled = enabled,
             onValueChange = {
-                if (it.text.contains('\n')) onAddNewLine(it) else onUpdateText(it)
+                if (currentTextField == it) return@BasicTextField
+                if (it.text.contains('\n')) onContainNewLine(it) else onUpdateText(it)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,6 +118,22 @@ private fun onPreviewDownKeyEvent(
     val isKeyUp = event.type == KeyEventType.KeyDown
     val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_DOWN
     val isEmpty = value.selection == TextRange(value.text.count())
+    return if (isKeyUp && isBackKey && isEmpty) {
+        invoke()
+        true
+    } else {
+        false
+    }
+}
+
+private fun onPreviewEnterKeyEvent(
+    event: KeyEvent,
+    selection: TextRange,
+    invoke: () -> Unit
+): Boolean {
+    val isKeyUp = event.type == KeyEventType.KeyDown
+    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_ENTER
+    val isEmpty = selection == TextRange.Zero
     return if (isKeyUp && isBackKey && isEmpty) {
         invoke()
         true

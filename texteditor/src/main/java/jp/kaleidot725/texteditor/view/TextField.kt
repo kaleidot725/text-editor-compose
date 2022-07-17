@@ -4,7 +4,6 @@ import android.view.KeyEvent.KEYCODE_DEL
 import android.view.KeyEvent.KEYCODE_DPAD_DOWN
 import android.view.KeyEvent.KEYCODE_DPAD_UP
 import android.view.KeyEvent.KEYCODE_ENTER
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -15,10 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -27,7 +26,6 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import jp.kaleidot725.texteditor.state.TextFieldState
-import org.w3c.dom.Text
 
 @Composable
 internal fun TextField(
@@ -37,7 +35,7 @@ internal fun TextField(
     onContainNewLine: (TextFieldValue) -> Unit,
     onAddNewLine: (TextFieldValue) -> Unit,
     onDeleteNewLine: () -> Unit,
-    onFocus: () -> Unit,
+    onFocus: (Boolean) -> Unit,
     onUpFocus: () -> Unit,
     onDownFocus: () -> Unit,
     modifier: Modifier = Modifier
@@ -46,14 +44,15 @@ internal fun TextField(
     val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
     LaunchedEffect(textFieldState.isSelected) {
-        if (textFieldState.isSelected) focusRequester.requestFocus()
+        if (textFieldState.isSelected) {
+            focusRequester.requestFocus()
+        }
     }
 
     Box(modifier = modifier
+        .focusTarget()
         .focusRequester(focusRequester)
-        .onFocusChanged {
-            if (it.isFocused) onFocus()
-        }
+        .onFocusChanged { if (it.isFocused) onFocus(true) }
         .onPreviewKeyEvent { event ->
             val value = textFieldState.value
             val selection = currentTextField.selection

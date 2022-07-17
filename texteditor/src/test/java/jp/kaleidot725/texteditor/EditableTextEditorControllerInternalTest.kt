@@ -303,6 +303,27 @@ class EditableTextEditorControllerInternalTest : StringSpec({
             controller.selectField(3)
         }
     }
+    "clear_selected_indices" {
+        val controller = EditableTextEditorController("0\n1\n2".lines())
+
+        controller.selectField(1)
+        controller.clearSelectedIndices()
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[1].isSelected shouldBe false
+        controller.fields[2].isSelected shouldBe false
+        controller.selectedIndices.count() shouldBe 0
+
+        controller.setMultipleSelectionMode(true)
+        controller.selectField(0)
+        controller.selectField(1)
+        controller.selectField(2)
+        controller.clearSelectedIndices()
+
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[1].isSelected shouldBe false
+        controller.fields[2].isSelected shouldBe false
+        controller.selectedIndices.count() shouldBe 0
+    }
     "clear_selected_index_when_toggle_multiple_selection_mode" {
         val controller = EditableTextEditorController("0\n1\n2".lines())
 
@@ -436,7 +457,8 @@ class EditableTextEditorControllerExternalTest : StringSpec({
         controller.selectField(1)
         controller.deleteSelectedLines()
         controller.deleteAllLine()
-        count shouldBe 7
+        controller.clearSelectedIndices()
+        count shouldBe 8
     }
 
     "get_all_test" {

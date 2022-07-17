@@ -165,10 +165,17 @@ internal class EditableTextEditorController(
         }
     }
 
+    fun clearSelectedIndices() {
+        lock.withLock {
+            this.clearSelectedIndicesInternal()
+            onChanged()
+        }
+    }
+
     override fun setMultipleSelectionMode(value: Boolean) {
         lock.withLock {
             if (isMultipleSelectionMode.value && !value) {
-                clearSelectedIndices()
+                this.clearSelectedIndicesInternal()
             }
             _isMultipleSelectionMode.value = value
             onChanged()
@@ -212,7 +219,7 @@ internal class EditableTextEditorController(
         }
     }
 
-    private fun clearSelectedIndices() {
+    private fun clearSelectedIndicesInternal() {
         _selectedIndices
             .filter { _fields.getOrNull(it) != null }
             .forEach { index -> _fields[index] = _fields[index].copy(isSelected = false) }
@@ -266,7 +273,7 @@ internal class EditableTextEditorController(
                 isSelected = isSelected,
                 value = target.value.copy(selection = selection)
             )
-            clearSelectedIndices()
+            this.clearSelectedIndicesInternal()
             _fields[targetIndex] = copyTarget
             _selectedIndices.add(targetIndex)
         }

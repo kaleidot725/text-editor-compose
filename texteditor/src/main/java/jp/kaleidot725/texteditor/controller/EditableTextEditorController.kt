@@ -165,6 +165,18 @@ internal class EditableTextEditorController(
         }
     }
 
+    fun clearSelectedIndex(targetIndex: Int) {
+        lock.withLock {
+            if (targetIndex < 0 || fields.count() <= targetIndex) {
+                return@withLock
+            }
+
+            _fields[targetIndex] = _fields[targetIndex].copy(isSelected = false)
+            _selectedIndices.remove(targetIndex)
+            onChanged()
+        }
+    }
+
     fun clearSelectedIndices() {
         lock.withLock {
             this.clearSelectedIndicesInternal()

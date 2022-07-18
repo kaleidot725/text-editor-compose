@@ -35,7 +35,7 @@ internal fun TextField(
     onContainNewLine: (TextFieldValue) -> Unit,
     onAddNewLine: (TextFieldValue) -> Unit,
     onDeleteNewLine: () -> Unit,
-    onFocus: (Boolean) -> Unit,
+    onFocus: () -> Unit,
     onUpFocus: () -> Unit,
     onDownFocus: () -> Unit,
     modifier: Modifier = Modifier
@@ -52,7 +52,7 @@ internal fun TextField(
     Box(modifier = modifier
         .focusTarget()
         .focusRequester(focusRequester)
-        .onFocusChanged { if (it.isFocused) onFocus(true) }
+        .onFocusChanged { if (it.isFocused) onFocus() }
         .onPreviewKeyEvent { event ->
             val value = textFieldState.value
             val selection = currentTextField.selection

@@ -303,6 +303,38 @@ class EditableTextEditorControllerInternalTest : StringSpec({
             controller.selectField(3)
         }
     }
+    "clear_selected_index" {
+        val controller = EditableTextEditorController("0\n1\n2".lines())
+
+        controller.clearSelectedIndex(0)
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[1].isSelected shouldBe false
+        controller.fields[2].isSelected shouldBe false
+        controller.selectedIndices.count() shouldBe 0
+
+        controller.setMultipleSelectionMode(true)
+        controller.selectField(0)
+        controller.selectField(1)
+        controller.selectField(2)
+
+        controller.clearSelectedIndex(0)
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[1].isSelected shouldBe true
+        controller.fields[2].isSelected shouldBe true
+        controller.selectedIndices.count() shouldBe 2
+
+        controller.clearSelectedIndex(1)
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[1].isSelected shouldBe false
+        controller.fields[2].isSelected shouldBe true
+        controller.selectedIndices.count() shouldBe 1
+
+        controller.clearSelectedIndex(2)
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[1].isSelected shouldBe false
+        controller.fields[2].isSelected shouldBe false
+        controller.selectedIndices.count() shouldBe 0
+    }
     "clear_selected_indices" {
         val controller = EditableTextEditorController("0\n1\n2".lines())
 
@@ -440,10 +472,10 @@ class EditableTextEditorControllerExternalTest : StringSpec({
         val controller = EditableTextEditorController("0\n1\n2".lines())
 
         controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe  true
+        controller.isMultipleSelectionMode.value shouldBe true
 
         controller.setMultipleSelectionMode(false)
-        controller.isMultipleSelectionMode.value shouldBe  false
+        controller.isMultipleSelectionMode.value shouldBe false
     }
     "set_on_changed_text_listener" {
         val controller = EditableTextEditorController("000\n111\n222".lines())
@@ -457,14 +489,15 @@ class EditableTextEditorControllerExternalTest : StringSpec({
         controller.selectField(1)
         controller.deleteSelectedLines()
         controller.deleteAllLine()
+        controller.clearSelectedIndex(0)
         controller.clearSelectedIndices()
-        count shouldBe 8
+        count shouldBe 9
     }
 
     "get_all_test" {
         val controller = EditableTextEditorController("0\n1\n2".lines())
         val actual = controller.getAllText()
-        actual shouldBe  "0\n1\n2"
+        actual shouldBe "0\n1\n2"
     }
     "get_selected_text" {
         val controller = EditableTextEditorController("0\n1\n2".lines())
@@ -487,7 +520,7 @@ class EditableTextEditorControllerExternalTest : StringSpec({
     "delete_all_line" {
         val controller = EditableTextEditorController("0\n1\n2".lines())
         controller.deleteAllLine()
-        controller.fields.count() shouldBe  1
+        controller.fields.count() shouldBe 1
         controller.fields[0].isSelected shouldBe true
         controller.fields[0].value.text shouldBe ""
     }

@@ -77,11 +77,7 @@ fun TextEditor(
                             }
                     ) {
                         DisposableEffect(Unit) {
-                            onDispose {
-                                if (editableController.selectedIndices.contains(index)) {
-                                    editableController.clearSelectedIndices()
-                                }
-                            }
+                            onDispose { editableController.clearSelectedIndex(index) }
                         }
 
                         TextField(
@@ -109,10 +105,8 @@ fun TextEditor(
                                 editableController.deleteField(targetIndex = index)
                                 if (index != 0) lastEvent = Event.DeleteNewLine(index - 1)
                             },
-                            onFocus = { isFocused ->
-                                if (isFocused) {
-                                    editableController.selectField(index)
-                                }
+                            onFocus = {
+                                editableController.selectField(index)
                             },
                             onUpFocus = {
                                 editableController.selectPreviousField()

@@ -5,20 +5,13 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.imeNestedScroll
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.Switch
@@ -33,29 +26,25 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import jp.kaleidot725.sample.ui.theme.SampleTheme
-import jp.kaleidot725.texteditor.extension.rememberTextEditorController
 import jp.kaleidot725.texteditor.controller.TextEditorController
+import jp.kaleidot725.texteditor.extension.rememberTextEditorController
 import jp.kaleidot725.texteditor.view.TextEditor
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
         setContent {
             SampleTheme {
-                val textEditorState by rememberTextEditorController(lines = DemoText.lines(), onChanged = { /** SAVE ACTION */ })
-                Column(
-                    Modifier
-                        .fillMaxSize()
-                        .systemBarsPadding()) {
+                val textEditorState by rememberTextEditorController(
+                    lines = DemoText.lines(),
+                    onChanged = { /** SAVE ACTION */ })
+                Column {
                     TextEditorMenu(textEditorController = textEditorState)
                     TextEditor(
                         textEditorController = textEditorState,
-                        modifier = Modifier.fillMaxSize().imePadding()
+                        modifier = Modifier.fillMaxSize()
                     ) { index, isSelected, innerTextField ->
                         val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
                         Row(modifier = Modifier.background(backgroundColor)) {

@@ -70,7 +70,7 @@ fun TextEditor(
                 isSelected = textFieldState.isSelected,
                 innerTextField = { modifier ->
                     Box(
-                        modifier = Modifier
+                        modifier = modifier
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
@@ -118,8 +118,7 @@ fun TextEditor(
                             onDownFocus = {
                                 editableController.selectNextField()
                                 lastEvent = Event.AddNewLine(index + 1)
-                            },
-                            modifier = modifier
+                            }
                         )
                     }
                 }

@@ -16,8 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import jp.kaleidot725.texteditor.controller.EditableTextEditorController
-import jp.kaleidot725.texteditor.controller.TextEditorController
+import jp.kaleidot725.texteditor.extension.rememberTextEditorController
+import jp.kaleidot725.texteditor.state.TextEditorState
 
 typealias DecorationBoxComposable = @Composable (
     index: Int,
@@ -27,42 +27,44 @@ typealias DecorationBoxComposable = @Composable (
 
 @Composable
 fun TextEditor(
-    textEditorController: TextEditorController,
+    textEditorState: TextEditorState,
+    onChanged: (TextEditorState) -> Unit,
     modifier: Modifier = Modifier,
     contentPaddingValues: PaddingValues = PaddingValues(),
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
-    val editableController by rememberUpdatedState(textEditorController as EditableTextEditorController)
-    val isMultipleSelectionMode by textEditorController.isMultipleSelectionMode
-
-    val listState = rememberLazyListState()
+    val editableController by rememberTextEditorController(textEditorState, onChanged = { onChanged(it) })
+    val lazyColumnState = rememberLazyListState()
     var lastEvent by remember { mutableStateOf(null as Event?) }
+    val isMultipleSelectionMode by rememberUpdatedState(newValue = textEditorState.isMultipleSelectionMode)
+
+    editableController.syncState(textEditorState)
 
     LaunchedEffect(lastEvent) {
         when (val event = lastEvent) {
             is Event.AddNewLine -> {
-                listState.animateScrollToItem(event.index)
+                lazyColumnState.animateScrollToItem(event.index)
             }
             is Event.DeleteNewLine -> {
-                listState.animateScrollToItem(event.index)
+                lazyColumnState.animateScrollToItem(event.index)
             }
             is Event.Down -> {
-                listState.animateScrollToItem(event.index)
+                lazyColumnState.animateScrollToItem(event.index)
             }
             is Event.Up -> {
-                listState.animateScrollToItem(event.index)
+                lazyColumnState.animateScrollToItem(event.index)
             }
             else -> {}
         }
     }
 
     LazyColumn(
-        state = listState,
+        state = lazyColumnState,
         modifier = modifier,
         contentPadding = contentPaddingValues
     ) {
         itemsIndexed(
-            items = editableController.fields,
+            items = textEditorState.fields,
             key = { _, item -> item.id }
         ) { index, textFieldState ->
             decorationBox(
@@ -75,17 +77,21 @@ fun TextEditor(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
                             ) {
-                                if (!isMultipleSelectionMode) return@clickable
+                                if (!textEditorState.isMultipleSelectionMode) return@clickable
                                 editableController.selectField(targetIndex = index)
                             }
                     ) {
                         DisposableEffect(Unit) {
-                            onDispose { editableController.clearSelectedIndex(index) }
+                            onDispose {
+                                if (!isMultipleSelectionMode) {
+                                    editableController.clearSelectedIndex(index)
+                                }
+                            }
                         }
 
                         TextField(
                             textFieldState = textFieldState,
-                            enabled = !isMultipleSelectionMode,
+                            enabled = !textEditorState.isMultipleSelectionMode,
                             onUpdateText = { newText ->
                                 editableController.updateField(
                                     targetIndex = index,

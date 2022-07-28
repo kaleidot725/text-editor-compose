@@ -1,36 +1,44 @@
 package jp.kaleidot725.texteditor.controller
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import jp.kaleidot725.texteditor.state.TextEditorState
 import jp.kaleidot725.texteditor.state.TextFieldState
 import java.security.InvalidParameterException
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 @Stable
-internal class EditableTextEditorController(
-    lines: List<String>,
-    selectedIndices: List<Int>? = null,
-    fields: List<TextFieldState>? = null,
-) : TextEditorController {
-    private var onChanged: () -> Unit = {}
+class EditorController(
+    textEditorState: TextEditorState
+) {
+    private var onChanged: (TextEditorState) -> Unit = {}
 
-    private var _isMultipleSelectionMode = mutableStateOf(false)
-    override val isMultipleSelectionMode get() = _isMultipleSelectionMode
+    private var _isMultipleSelectionMode = textEditorState.isMultipleSelectionMode
+    val isMultipleSelectionMode get() = _isMultipleSelectionMode
 
-    private val _selectedIndices = (selectedIndices ?: listOf(-1)).toMutableStateList()
+    private val _fields = (textEditorState.fields).toMutableList()
+    val fields get() = _fields.toList()
+
+    private val _selectedIndices = (textEditorState.selectedIndices).toMutableList()
     val selectedIndices get() = _selectedIndices.toList()
 
-    private val _fields = (fields ?: lines.createInitTextFieldStates()).toMutableStateList()
-    val fields get() = _fields.toList()
+    private val state: TextEditorState
+        get() = TextEditorState(fields, selectedIndices, isMultipleSelectionMode)
 
     private val lock = ReentrantLock()
 
     init {
         selectFieldInternal(0)
+    }
+
+    fun syncState(state: TextEditorState) {
+        _isMultipleSelectionMode = state.isMultipleSelectionMode
+        _selectedIndices.clear()
+        _selectedIndices.addAll(state.selectedIndices)
+        _fields.clear()
+        _fields.addAll(state.fields)
     }
 
     fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
@@ -55,7 +63,7 @@ internal class EditableTextEditorController(
 
             val lastNewSplitFieldIndex = targetIndex + splitFieldValues.lastIndex
             selectFieldInternal(lastNewSplitFieldIndex)
-            onChanged()
+            onChanged(state)
         }
     }
 
@@ -87,10 +95,9 @@ internal class EditableTextEditorController(
             _fields.add(targetIndex + 1, secondState)
 
             selectFieldInternal(targetIndex + 1)
-            onChanged()
+            onChanged(state)
         }
     }
-
 
     fun updateField(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
@@ -103,7 +110,7 @@ internal class EditableTextEditorController(
             }
 
             _fields[targetIndex] = _fields[targetIndex].copy(value = textFieldValue)
-            onChanged()
+            onChanged(state)
         }
     }
 
@@ -132,36 +139,38 @@ internal class EditableTextEditorController(
             _fields.removeAt(targetIndex)
 
             selectFieldInternal(targetIndex - 1)
-            onChanged()
+            onChanged(state)
         }
     }
 
     fun selectField(targetIndex: Int) {
         lock.withLock {
             selectFieldInternal(targetIndex)
-            onChanged()
+            onChanged(state)
         }
     }
 
     fun selectPreviousField() {
         lock.withLock {
-            if (isMultipleSelectionMode.value) return
+            if (isMultipleSelectionMode) return
             val selectedIndex = selectedIndices.firstOrNull() ?: return
             if (selectedIndex == 0) return
 
             val previousIndex = selectedIndex - 1
             selectFieldInternal(previousIndex, SelectionOption.LAST_POSITION)
+            onChanged(state)
         }
     }
 
     fun selectNextField() {
         lock.withLock {
-            if (isMultipleSelectionMode.value) return
+            if (isMultipleSelectionMode) return
             val selectedIndex = selectedIndices.firstOrNull() ?: return
             if (selectedIndex == fields.lastIndex) return
 
             val nextIndex = selectedIndex + 1
             selectFieldInternal(nextIndex, SelectionOption.FIRST_POSITION)
+            onChanged(state)
         }
     }
 
@@ -173,61 +182,47 @@ internal class EditableTextEditorController(
 
             _fields[targetIndex] = _fields[targetIndex].copy(isSelected = false)
             _selectedIndices.remove(targetIndex)
-            onChanged()
+            onChanged(state)
         }
     }
 
     fun clearSelectedIndices() {
         lock.withLock {
             this.clearSelectedIndicesInternal()
-            onChanged()
+            onChanged(state)
         }
     }
 
-    override fun setMultipleSelectionMode(value: Boolean) {
+    fun setMultipleSelectionMode(value: Boolean) {
         lock.withLock {
-            if (isMultipleSelectionMode.value && !value) {
+            if (isMultipleSelectionMode && !value) {
                 this.clearSelectedIndicesInternal()
             }
-            _isMultipleSelectionMode.value = value
-            onChanged()
+            _isMultipleSelectionMode = value
+            onChanged(state)
         }
     }
 
-    override fun setOnChangedTextListener(onChanged: () -> Unit) {
+    fun setOnChangedTextListener(onChanged: (TextEditorState) -> Unit) {
         this.onChanged = onChanged
     }
 
-    override fun getAllText(): String {
-        return fields.map { it.value.text }.foldIndexed("") { index, acc, s ->
-            if (index == 0) acc + s else acc + "\n" + s
-        }
-    }
-
-    override fun getSelectedText(): String {
-        val lines = fields.map { it.value.text }
-        val targets = selectedIndices.sortedBy { it }.mapNotNull { lines.getOrNull(it) }
-        return targets.foldIndexed("") { index, acc, s ->
-            if (index == 0) acc + s else acc + "\n" + s
-        }
-    }
-
-    override fun deleteAllLine() {
+    fun deleteAllLine() {
         lock.withLock {
             _fields.clear()
             _fields.addAll(emptyList<String>().createInitTextFieldStates())
             _selectedIndices.clear()
             selectFieldInternal(0)
-            onChanged()
+            onChanged(state)
         }
     }
 
-    override fun deleteSelectedLines() {
+    fun deleteSelectedLines() {
         lock.withLock {
             val targets = selectedIndices.mapNotNull { _fields.getOrNull(it) }
             _fields.removeAll(targets)
             _selectedIndices.clear()
-            onChanged()
+            onChanged(state)
         }
     }
 
@@ -236,16 +231,6 @@ internal class EditableTextEditorController(
             .filter { _fields.getOrNull(it) != null }
             .forEach { index -> _fields[index] = _fields[index].copy(isSelected = false) }
         _selectedIndices.clear()
-    }
-
-    private fun List<String>.createInitTextFieldStates(): List<TextFieldState> {
-        if (this.isEmpty()) return listOf(TextFieldState(isSelected = false))
-        return this.mapIndexed { _, s ->
-            TextFieldState(
-                value = TextFieldValue(s, TextRange.Zero),
-                isSelected = false
-            )
-        }
     }
 
     private fun selectFieldInternal(
@@ -269,7 +254,7 @@ internal class EditableTextEditorController(
             }
         }
 
-        if (isMultipleSelectionMode.value) {
+        if (isMultipleSelectionMode) {
             val isSelected = !_fields[targetIndex].isSelected
             val copyTarget = target.copy(
                 isSelected = isSelected,
@@ -299,5 +284,17 @@ internal class EditableTextEditorController(
         FIRST_POSITION,
         LAST_POSITION,
         NONE
+    }
+
+    companion object {
+        fun List<String>.createInitTextFieldStates(): List<TextFieldState> {
+            if (this.isEmpty()) return listOf(TextFieldState(isSelected = false))
+            return this.mapIndexed { _, s ->
+                TextFieldState(
+                    value = TextFieldValue(s, TextRange.Zero),
+                    isSelected = false
+                )
+            }
+        }
     }
 }

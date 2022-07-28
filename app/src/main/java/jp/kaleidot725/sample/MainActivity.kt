@@ -8,42 +8,63 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Button
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import jp.kaleidot725.sample.ui.theme.SampleTheme
-import jp.kaleidot725.texteditor.controller.TextEditorController
-import jp.kaleidot725.texteditor.extension.rememberTextEditorController
+import jp.kaleidot725.texteditor.state.TextEditorState
 import jp.kaleidot725.texteditor.view.TextEditor
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
             SampleTheme {
-                val textEditorState by rememberTextEditorController(
-                    lines = DemoText.lines(),
-                    onChanged = { /** SAVE ACTION */ })
-                Column {
-                    TextEditorMenu(textEditorController = textEditorState)
+                var textEditorState by remember { mutableStateOf(TextEditorState.create(DemoText)) }
+                
+                Column(
+                    modifier = Modifier.systemBarsPadding()
+                ) {
+                    TextEditorMenu(
+                        textEditorState = textEditorState,
+                        onChanged = { textEditorState = it }
+                    )
+
                     TextEditor(
-                        textEditorController = textEditorState,
+                        textEditorState = textEditorState,
+                        onChanged = { textEditorState = it },
+                        contentPaddingValues = PaddingValues(
+                            bottom = with(LocalDensity.current) {
+                                WindowInsets.ime.getBottom(this).toDp()
+                            }
+                        ),
                         modifier = Modifier.fillMaxSize()
                     ) { index, isSelected, innerTextField ->
                         val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
@@ -94,7 +115,7 @@ The first commercially available smartphone running Android was the HTC Dream, a
 """.trimIndent()
 
 @Composable
-private fun ColumnScope.TextEditorMenu(textEditorController: TextEditorController) {
+private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState, onChanged: (TextEditorState) -> Unit) {
     val context: Context = LocalContext.current
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
 
@@ -106,10 +127,12 @@ private fun ColumnScope.TextEditorMenu(textEditorController: TextEditorControlle
                 .align(Alignment.CenterVertically)
         )
         Switch(
-            checked = textEditorController.isMultipleSelectionMode.value,
+            checked = textEditorState.isMultipleSelectionMode,
             onCheckedChange = {
-                textEditorController.setMultipleSelectionMode(
-                    !textEditorController.isMultipleSelectionMode.value
+                onChanged.invoke(
+                    textEditorState.copy(
+                        isMultipleSelectionMode = !textEditorState.isMultipleSelectionMode
+                    )
                 )
             }
         )
@@ -124,11 +147,10 @@ private fun ColumnScope.TextEditorMenu(textEditorController: TextEditorControlle
         )
         Button(
             onClick = {
-                val text = textEditorController.getSelectedText()
-                textEditorController.setMultipleSelectionMode(false)
-
+                val text = textEditorState.getSelectedText()
                 clipboardManager.setText(AnnotatedString(text))
                 Toast.makeText(context, "Copy selected text to clipboard", Toast.LENGTH_SHORT).show()
+                onChanged.invoke(textEditorState.copy(isMultipleSelectionMode = false))
             }
         ) {
             Text(text = "EXECUTE")
@@ -143,8 +165,16 @@ private fun ColumnScope.TextEditorMenu(textEditorController: TextEditorControlle
                 .align(Alignment.CenterVertically)
         )
         Button(onClick = {
-            textEditorController.deleteSelectedLines()
-            textEditorController.setMultipleSelectionMode(false)
+            val newFields = textEditorState.fields.toMutableList().apply {
+                val targets = this.filterIndexed { index, _ -> textEditorState.selectedIndices.contains(index) }
+                removeAll(targets)
+            }
+            onChanged.invoke(
+                textEditorState.copy(
+                    fields = newFields,
+                    isMultipleSelectionMode = false
+                )
+            )
         }) {
             Text(text = "EXECUTE")
         }

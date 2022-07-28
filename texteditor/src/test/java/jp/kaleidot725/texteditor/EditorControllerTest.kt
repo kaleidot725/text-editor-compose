@@ -5,28 +5,103 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
-import jp.kaleidot725.texteditor.controller.EditableTextEditorController
+import jp.kaleidot725.texteditor.controller.EditorController
+import jp.kaleidot725.texteditor.state.TextEditorState
 import java.security.InvalidParameterException
 
-class EditableTextEditorControllerInternalTest : StringSpec({
-    "initialize_when_text_is_empty" {
-        val controller = EditableTextEditorController("".lines())
+class EditorControllerTest : StringSpec({
+    "set_multiple_selection_mode" {
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
 
-        controller.isMultipleSelectionMode.value shouldBe false
+        controller.setMultipleSelectionMode(true)
+        controller.isMultipleSelectionMode shouldBe true
+
+        controller.setMultipleSelectionMode(false)
+        controller.isMultipleSelectionMode shouldBe false
+    }
+    "set_on_changed_text_listener" {
+        val controller = EditorController(TextEditorState.create("000\n111\n222".lines()))
+        var count = 0
+
+        controller.setOnChangedTextListener { count++ }
+        controller.splitAtCursor(0, TextFieldValue("000\n000"))
+        controller.deleteField(1)
+        controller.updateField(0, TextFieldValue("000"))
+        controller.setMultipleSelectionMode(true)
+        controller.selectField(1)
+        controller.deleteSelectedLines()
+        controller.deleteAllLine()
+        controller.clearSelectedIndex(0)
+        controller.clearSelectedIndices()
+        count shouldBe 9
+    }
+    "delete_all_line" {
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
+        controller.deleteAllLine()
+        controller.fields.count() shouldBe 1
+        controller.fields[0].isSelected shouldBe true
+        controller.fields[0].value.text shouldBe ""
+    }
+    "delete_selected_line" {
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
+
+        controller.selectField(1)
+        controller.fields.count() shouldBe 3
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[0].value.text shouldBe "0"
+        controller.fields[1].isSelected shouldBe true
+        controller.fields[1].value.text shouldBe "1"
+        controller.fields[2].isSelected shouldBe false
+        controller.fields[2].value.text shouldBe "2"
+
+        controller.deleteSelectedLines()
+
+        controller.fields.count() shouldBe 2
+        controller.fields[0].isSelected shouldBe false
+        controller.fields[0].value.text shouldBe "0"
+        controller.fields[1].isSelected shouldBe false
+        controller.fields[1].value.text shouldBe "2"
+        controller.selectedIndices.count() shouldBe 0
+    }
+    "delete_selected_line_on_multiple_selection" {
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
+
+        controller.setMultipleSelectionMode(true)
+        controller.isMultipleSelectionMode shouldBe true
+        controller.selectField(1)
+        controller.selectField(2)
+
+        controller.fields.count() shouldBe 3
+        controller.fields[0].isSelected shouldBe true
+        controller.fields[0].value.text shouldBe "0"
+        controller.fields[1].isSelected shouldBe true
+        controller.fields[1].value.text shouldBe "1"
+        controller.fields[2].isSelected shouldBe true
+        controller.fields[2].value.text shouldBe "2"
+
+        controller.deleteSelectedLines()
+        controller.fields.count() shouldBe 0
+        controller.selectedIndices.count() shouldBe 0
+    }
+    "initialize_when_text_is_empty" {
+        val controller = EditorController(TextEditorState.create("".lines()))
+
+        controller.isMultipleSelectionMode shouldBe false
         controller.fields.count() shouldBe 1
         controller.fields[0].value shouldBe TextFieldValue(text = "")
         controller.fields[0].isSelected shouldBe true
     }
     "initialize_when_text_is_not_empty" {
-        val controller = EditableTextEditorController(
-            """
+        val controller = EditorController(
+            TextEditorState.create(
+                """
             one
             two
             three
         """.trimIndent().lines()
+            )
         )
-
-        controller.isMultipleSelectionMode.value shouldBe false
+        controller.isMultipleSelectionMode shouldBe false
         controller.fields.count() shouldBe 3
         controller.fields[0].value shouldBe TextFieldValue(text = "one")
         controller.fields[0].isSelected shouldBe true
@@ -36,14 +111,18 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[2].isSelected shouldBe false
     }
     "create_text" {
-        val controller = EditableTextEditorController("a\nb\nc".lines())
+        val controller = EditorController(TextEditorState.create("a\nb\nc".lines()))
         controller.splitNewLine(2, TextFieldValue("c\n"))
         controller.updateField(3, TextFieldValue("d"))
-        val actual = controller.getAllText()
-        actual shouldBe "a\nb\nc\nd"
+
+        controller.fields[0].value.text shouldBe "a"
+        controller.fields[1].value.text shouldBe "b"
+        controller.fields[2].value.text shouldBe "c"
+        controller.fields[3].value.text shouldBe "d"
+        controller.fields.count() shouldBe 4
     }
     "split_at_cursor" {
-        val controller = EditableTextEditorController("abcdef".lines())
+        val controller = EditorController(TextEditorState.create("abcdef".lines()))
         controller.splitAtCursor(0, TextFieldValue("abcdef", TextRange(3)))
 
         controller.fields.count() shouldBe 2
@@ -53,7 +132,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[1].isSelected shouldBe true
     }
     "split_at_cursor_zero" {
-        val controller = EditableTextEditorController("".lines())
+        val controller = EditorController(TextEditorState.create("".lines()))
         controller.splitAtCursor(0, TextFieldValue("", TextRange(0)))
 
         controller.fields.count() shouldBe 2
@@ -63,7 +142,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[1].isSelected shouldBe true
     }
     "split_at_cursor_last" {
-        val controller = EditableTextEditorController("".lines())
+        val controller = EditorController(TextEditorState.create("".lines()))
         controller.splitAtCursor(0, TextFieldValue("abcdef", TextRange(6)))
 
         controller.fields.count() shouldBe 2
@@ -73,7 +152,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[1].isSelected shouldBe true
     }
     "split_at_cursor_when_input_invalid_target_index" {
-        val controller = EditableTextEditorController("abc\ndef".lines())
+        val controller = EditorController(TextEditorState.create("abc\ndef".lines()))
         shouldThrow<InvalidParameterException> {
             controller.splitAtCursor(-1, TextFieldValue("xxxx"))
         }
@@ -82,7 +161,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         }
     }
     "split_field_when_field_is_empty" {
-        val controller = EditableTextEditorController("".lines())
+        val controller = EditorController(TextEditorState.create("".lines()))
         controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "\n"))
 
         controller.fields.count() shouldBe 2
@@ -92,7 +171,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[1].isSelected shouldBe true
     }
     "split_field_when_field_is_not_empty" {
-        val controller = EditableTextEditorController("aaa".lines())
+        val controller = EditorController(TextEditorState.create("aaa".lines()))
         controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "aaa\n"))
 
         controller.fields.count() shouldBe 2
@@ -102,7 +181,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[1].isSelected shouldBe true
     }
     "split_field_in_the_middle_of_the_field" {
-        val controller = EditableTextEditorController("aaaa".lines())
+        val controller = EditorController(TextEditorState.create("aaaa".lines()))
         controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "aa\naa"))
 
         controller.fields.count() shouldBe 2
@@ -112,7 +191,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[1].isSelected shouldBe true
     }
     "split_field_when_input_several_newlines" {
-        val controller = EditableTextEditorController("".lines())
+        val controller = EditorController(TextEditorState.create("".lines()))
         controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "a\nb\nc\nd"))
 
         controller.fields.count() shouldBe 4
@@ -126,7 +205,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[3].isSelected shouldBe true
     }
     "split_field_when_input_invalid_target_index" {
-        val controller = EditableTextEditorController("abc\ndef".lines())
+        val controller = EditorController(TextEditorState.create("abc\ndef".lines()))
         shouldThrow<InvalidParameterException> {
             controller.splitNewLine(-1, TextFieldValue("xxxx"))
         }
@@ -135,13 +214,13 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         }
     }
     "split_field_when_not_contain_new_line" {
-        val controller = EditableTextEditorController("".lines())
+        val controller = EditorController(TextEditorState.create("".lines()))
         shouldThrow<InvalidParameterException> {
             controller.splitNewLine(0, TextFieldValue("xxxx"))
         }
     }
     "update_field_when_field_is_empty" {
-        val controller = EditableTextEditorController("".lines())
+        val controller = EditorController(TextEditorState.create("".lines()))
         val newFieldValue = TextFieldValue(text = "abc", selection = TextRange(3))
         controller.updateField(targetIndex = 0, newFieldValue)
 
@@ -149,7 +228,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[0].value shouldBe newFieldValue
     }
     "update_field_when_input_invalid_target_index" {
-        val controller = EditableTextEditorController("abc\ndef".lines())
+        val controller = EditorController(TextEditorState.create("abc\ndef".lines()))
         shouldThrow<InvalidParameterException> {
             controller.updateField(-1, TextFieldValue("xxxx"))
         }
@@ -158,20 +237,20 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         }
     }
     "update_field_when_input_newline" {
-        val controller = EditableTextEditorController("abc\ndef".lines())
+        val controller = EditorController(TextEditorState.create("abc\ndef".lines()))
         shouldThrow<InvalidParameterException> {
             controller.updateField(0, TextFieldValue("xxxx\nyyyy"))
         }
     }
     "delete_field_when_fields_are_zero" {
-        val controller = EditableTextEditorController("".lines())
+        val controller = EditorController(TextEditorState.create("".lines()))
         controller.deleteField(0)
         controller.fields.count() shouldBe 1
         controller.fields[0].value shouldBe TextFieldValue(text = "")
         controller.fields[0].isSelected shouldBe true
     }
     "delete_field_when_fields_are_not_zero" {
-        val controller = EditableTextEditorController("abc\n".lines())
+        val controller = EditorController(TextEditorState.create("abc\n".lines()))
 
         controller.selectField(1)
 
@@ -189,7 +268,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[0].isSelected shouldBe true
     }
     "delete_field_in_the_middle_of_the_field" {
-        val controller = EditableTextEditorController("abc\ndef".lines())
+        val controller = EditorController(TextEditorState.create("abc\ndef".lines()))
         controller.selectField(1)
 
         controller.fields.count() shouldBe 2
@@ -206,7 +285,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[0].isSelected shouldBe true
     }
     "delete_field_when_input_invalid_target_index" {
-        val controller = EditableTextEditorController("abc\ndef".lines())
+        val controller = EditorController(TextEditorState.create("abc\ndef".lines()))
         shouldThrow<InvalidParameterException> {
             controller.splitNewLine(-1, TextFieldValue("xxxx"))
         }
@@ -215,9 +294,9 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         }
     }
     "select_field" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
 
-        controller.isMultipleSelectionMode.value shouldBe false
+        controller.isMultipleSelectionMode shouldBe false
         controller.selectField(1)
         controller.fields[0].isSelected shouldBe false
         controller.fields[1].isSelected shouldBe true
@@ -237,9 +316,9 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.selectedIndices.count() shouldBe 1
     }
     "select_selected_field" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
 
-        controller.isMultipleSelectionMode.value shouldBe false
+        controller.isMultipleSelectionMode shouldBe false
         controller.selectField(1)
         controller.fields[0].isSelected shouldBe false
         controller.fields[1].isSelected shouldBe true
@@ -253,7 +332,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.selectedIndices.count() shouldBe 1
     }
     "select_field_when_input_invalid_target_index" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
         shouldThrow<InvalidParameterException> {
             controller.selectField(-1)
         }
@@ -262,10 +341,10 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         }
     }
     "select_field_on_multiple_mode" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
 
         controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe true
+        controller.isMultipleSelectionMode shouldBe true
 
         controller.selectField(1)
         controller.selectField(2)
@@ -275,10 +354,10 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.selectedIndices.count() shouldBe 3
     }
     "select_selected_field_on_multiple_mode" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
 
         controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe true
+        controller.isMultipleSelectionMode shouldBe true
 
         controller.selectField(1)
         controller.fields[0].isSelected shouldBe true
@@ -293,7 +372,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.selectedIndices.count() shouldBe 1
     }
     "select_field_when_input_invalid_target_index_on_multiple_mode" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
 
         controller.setMultipleSelectionMode(true)
         shouldThrow<InvalidParameterException> {
@@ -304,7 +383,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         }
     }
     "clear_selected_index" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
 
         controller.clearSelectedIndex(0)
         controller.fields[0].isSelected shouldBe false
@@ -336,7 +415,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.selectedIndices.count() shouldBe 0
     }
     "clear_selected_indices" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
 
         controller.selectField(1)
         controller.clearSelectedIndices()
@@ -357,10 +436,10 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.selectedIndices.count() shouldBe 0
     }
     "clear_selected_index_when_toggle_multiple_selection_mode" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
 
         controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe true
+        controller.isMultipleSelectionMode shouldBe true
 
         controller.selectField(1)
         controller.selectField(2)
@@ -375,13 +454,13 @@ class EditableTextEditorControllerInternalTest : StringSpec({
 
         controller.selectField(0)
         controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe true
+        controller.isMultipleSelectionMode shouldBe true
         controller.fields[0].isSelected shouldBe true
         controller.fields[1].isSelected shouldBe false
         controller.fields[2].isSelected shouldBe false
     }
     "select_next_field" {
-        val controller = EditableTextEditorController("\n\n".lines())
+        val controller = EditorController(TextEditorState.create("\n\n".lines()))
 
         controller.selectNextField()
         controller.fields.count() shouldBe 3
@@ -393,7 +472,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[2].value.text shouldBe ""
     }
     "select_next_field_on_max_lines" {
-        val controller = EditableTextEditorController("\n\n".lines())
+        val controller = EditorController(TextEditorState.create("\n\n".lines()))
 
         controller.selectField(2)
         controller.selectNextField()
@@ -407,9 +486,9 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[2].value.text shouldBe ""
     }
     "select_next_field_on_multiple_selection" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
         controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe true
+        controller.isMultipleSelectionMode shouldBe true
         controller.selectField(1)
         controller.selectField(2)
 
@@ -423,7 +502,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[2].value.text shouldBe "2"
     }
     "select_previous_field" {
-        val controller = EditableTextEditorController("\n\n".lines())
+        val controller = EditorController(TextEditorState.create("\n\n".lines()))
 
         controller.selectField(2)
         controller.selectPreviousField()
@@ -437,7 +516,7 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[2].value.text shouldBe ""
     }
     "select_previous_field_on_min_lines" {
-        val controller = EditableTextEditorController("\n\n".lines())
+        val controller = EditorController(TextEditorState.create("\n\n".lines()))
 
         controller.selectPreviousField()
 
@@ -450,9 +529,9 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[2].value.text shouldBe ""
     }
     "select_previous_field_on_multiple_selection" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
+        val controller = EditorController(TextEditorState.create("0\n1\n2".lines()))
         controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe true
+        controller.isMultipleSelectionMode shouldBe true
         controller.selectField(1)
         controller.selectField(2)
 
@@ -464,105 +543,5 @@ class EditableTextEditorControllerInternalTest : StringSpec({
         controller.fields[1].value.text shouldBe "1"
         controller.fields[2].isSelected shouldBe true
         controller.fields[2].value.text shouldBe "2"
-    }
-})
-
-class EditableTextEditorControllerExternalTest : StringSpec({
-    "set_multiple_selection_mode" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
-
-        controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe true
-
-        controller.setMultipleSelectionMode(false)
-        controller.isMultipleSelectionMode.value shouldBe false
-    }
-    "set_on_changed_text_listener" {
-        val controller = EditableTextEditorController("000\n111\n222".lines())
-        var count = 0
-
-        controller.setOnChangedTextListener { count++ }
-        controller.splitAtCursor(0, TextFieldValue("000\n000"))
-        controller.deleteField(1)
-        controller.updateField(0, TextFieldValue("000"))
-        controller.setMultipleSelectionMode(true)
-        controller.selectField(1)
-        controller.deleteSelectedLines()
-        controller.deleteAllLine()
-        controller.clearSelectedIndex(0)
-        controller.clearSelectedIndices()
-        count shouldBe 9
-    }
-
-    "get_all_test" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
-        val actual = controller.getAllText()
-        actual shouldBe "0\n1\n2"
-    }
-    "get_selected_text" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
-
-        controller.selectField(1)
-        val actual = controller.getSelectedText()
-        actual shouldBe "1"
-    }
-    "get_selected_text_on_multiple_selection" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
-
-        controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe true
-
-        controller.selectField(1)
-        controller.selectField(2)
-        val actual = controller.getSelectedText()
-        actual shouldBe "0\n1\n2"
-    }
-    "delete_all_line" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
-        controller.deleteAllLine()
-        controller.fields.count() shouldBe 1
-        controller.fields[0].isSelected shouldBe true
-        controller.fields[0].value.text shouldBe ""
-    }
-    "delete_selected_line" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
-
-        controller.selectField(1)
-        controller.fields.count() shouldBe 3
-        controller.fields[0].isSelected shouldBe false
-        controller.fields[0].value.text shouldBe "0"
-        controller.fields[1].isSelected shouldBe true
-        controller.fields[1].value.text shouldBe "1"
-        controller.fields[2].isSelected shouldBe false
-        controller.fields[2].value.text shouldBe "2"
-
-        controller.deleteSelectedLines()
-
-        controller.fields.count() shouldBe 2
-        controller.fields[0].isSelected shouldBe false
-        controller.fields[0].value.text shouldBe "0"
-        controller.fields[1].isSelected shouldBe false
-        controller.fields[1].value.text shouldBe "2"
-        controller.selectedIndices.count() shouldBe 0
-    }
-    "delete_selected_line_on_multiple_selection" {
-        val controller = EditableTextEditorController("0\n1\n2".lines())
-
-        controller.setMultipleSelectionMode(true)
-        controller.isMultipleSelectionMode.value shouldBe true
-        controller.selectField(1)
-        controller.selectField(2)
-
-        controller.fields.count() shouldBe 3
-        controller.fields[0].isSelected shouldBe true
-        controller.fields[0].value.text shouldBe "0"
-        controller.fields[1].isSelected shouldBe true
-        controller.fields[1].value.text shouldBe "1"
-        controller.fields[2].isSelected shouldBe true
-        controller.fields[2].value.text shouldBe "2"
-
-        controller.deleteSelectedLines()
-        controller.fields.count() shouldBe 0
-        controller.selectedIndices.count() shouldBe 0
     }
 })

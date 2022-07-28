@@ -3,23 +3,17 @@ package jp.kaleidot725.texteditor.extension
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import jp.kaleidot725.texteditor.controller.TextEditorController
-import jp.kaleidot725.texteditor.factory.TextEditorStateFactory
+import jp.kaleidot725.texteditor.controller.EditorController
+import jp.kaleidot725.texteditor.state.TextEditorState
 
 @Composable
-fun rememberTextEditorController(text: String, onChanged: (controller: TextEditorController) -> Unit) = remember {
+fun rememberTextEditorController(
+    state: TextEditorState,
+    onChanged: (editorState: TextEditorState) -> Unit
+) = remember {
     mutableStateOf(
-        TextEditorStateFactory.create(text).apply {
-            setOnChangedTextListener { onChanged(this) }
-        }
-    )
-}
-
-@Composable
-fun rememberTextEditorController(lines: List<String>, onChanged: (controller: TextEditorController) -> Unit) = remember {
-    mutableStateOf(
-        TextEditorStateFactory.create(lines).apply {
-            setOnChangedTextListener { onChanged(this) }
+        EditorController(state).apply {
+            setOnChangedTextListener { onChanged(it) }
         }
     )
 }

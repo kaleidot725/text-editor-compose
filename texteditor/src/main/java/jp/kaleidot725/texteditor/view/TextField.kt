@@ -56,7 +56,7 @@ internal fun TextField(
         .onPreviewKeyEvent { event ->
             val value = textFieldState.value
             val selection = currentTextField.selection
-            
+
             val b1 = onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }
             if (b1) return@onPreviewKeyEvent true
 
@@ -91,10 +91,10 @@ private fun onPreviewDelKeyEvent(
     selection: TextRange,
     invoke: () -> Unit
 ): Boolean {
-    val isKeyUp = event.type == KeyEventType.KeyDown
-    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
+    val isKeyDown = event.type == KeyEventType.KeyDown
+    val isDelKey = event.nativeKeyEvent.keyCode == KEYCODE_DEL
     val isEmpty = selection == TextRange.Zero
-    return if (isKeyUp && isBackKey && isEmpty) {
+    return if (isKeyDown && isDelKey && isEmpty) {
         invoke()
         true
     } else {
@@ -107,10 +107,10 @@ private fun onPreviewUpKeyEvent(
     selection: TextRange,
     invoke: () -> Unit
 ): Boolean {
-    val isKeyUp = event.type == KeyEventType.KeyDown
-    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_UP
+    val isKeyDown = event.type == KeyEventType.KeyDown
+    val isUpKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_UP
     val isEmpty = selection == TextRange.Zero
-    return if (isKeyUp && isBackKey && isEmpty) {
+    return if (isKeyDown && isUpKey && isEmpty) {
         invoke()
         true
     } else {
@@ -123,10 +123,10 @@ private fun onPreviewDownKeyEvent(
     value: TextFieldValue,
     invoke: () -> Unit
 ): Boolean {
-    val isKeyUp = event.type == KeyEventType.KeyDown
-    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_DOWN
+    val isKeyDown = event.type == KeyEventType.KeyDown
+    val isDownKey = event.nativeKeyEvent.keyCode == KEYCODE_DPAD_DOWN
     val isEmpty = value.selection == TextRange(value.text.count())
-    return if (isKeyUp && isBackKey && isEmpty) {
+    return if (isKeyDown && isDownKey && isEmpty) {
         invoke()
         true
     } else {
@@ -139,10 +139,10 @@ private fun onPreviewEnterKeyEvent(
     selection: TextRange,
     invoke: () -> Unit
 ): Boolean {
-    val isKeyUp = event.type == KeyEventType.KeyDown
-    val isBackKey = event.nativeKeyEvent.keyCode == KEYCODE_ENTER
+    val isKeyDown = event.type == KeyEventType.KeyDown
+    val isEnterKey = event.nativeKeyEvent.keyCode == KEYCODE_ENTER
     val isEmpty = selection == TextRange.Zero
-    return if (isKeyUp && isBackKey && isEmpty) {
+    return if (isKeyDown && isEnterKey && isEmpty) {
         invoke()
         true
     } else {

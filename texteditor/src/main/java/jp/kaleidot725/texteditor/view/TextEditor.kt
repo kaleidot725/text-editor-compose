@@ -83,9 +83,7 @@ fun TextEditor(
                     ) {
                         DisposableEffect(Unit) {
                             onDispose {
-                                if (!isMultipleSelectionMode) {
-                                    editableController.clearSelectedIndex(index)
-                                }
+                                if (!isMultipleSelectionMode) editableController.clearSelectedIndex(index)
                             }
                         }
 
@@ -93,21 +91,14 @@ fun TextEditor(
                             textFieldState = textFieldState,
                             enabled = !textEditorState.isMultipleSelectionMode,
                             onUpdateText = { newText ->
-                                editableController.updateField(
-                                    targetIndex = index,
-                                    textFieldValue = newText
-                                )
+                                editableController.updateField(targetIndex = index, textFieldValue = newText)
                             },
                             onContainNewLine = { newText ->
-                                editableController.splitNewLine(
-                                    targetIndex = index, textFieldValue = newText
-                                )
+                                editableController.splitNewLine(targetIndex = index, textFieldValue = newText)
                                 lastEvent = Event.AddNewLine(index + 1)
                             },
                             onAddNewLine = { newText ->
-                                editableController.splitAtCursor(
-                                    targetIndex = index, textFieldValue = newText
-                                )
+                                editableController.splitAtCursor(targetIndex = index, textFieldValue = newText)
                                 lastEvent = Event.AddNewLine(index + 1)
                             },
                             onDeleteNewLine = {

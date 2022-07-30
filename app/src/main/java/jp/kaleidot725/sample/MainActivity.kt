@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import jp.kaleidot725.sample.ui.component.EditorMenus
 import jp.kaleidot725.sample.ui.component.FieldIcon
-import jp.kaleidot725.sample.ui.theme.DemoText
+import jp.kaleidot725.sample.ui.theme.EmptyText
 import jp.kaleidot725.sample.ui.theme.SampleTheme
 import jp.kaleidot725.texteditor.state.TextEditorState
 import jp.kaleidot725.texteditor.view.TextEditor
@@ -52,27 +52,26 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SampleTheme {
-                var textEditorState by remember { mutableStateOf(TextEditorState.create(DemoText)) }
+                var textEditorState by remember { mutableStateOf(TextEditorState.create(EmptyText)) }
                 val context: Context = LocalContext.current
                 val clipboardManager: ClipboardManager = LocalClipboardManager.current
                 val keyboardController = LocalSoftwareKeyboardController.current
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .systemBarsPadding()
-                ) {
+                val bottomPadding = if (textEditorState.isMultipleSelectionMode) 100.dp else 0.dp
+                val contentPaddingValues = PaddingValues(
+                    bottom = with(LocalDensity.current) {
+                        WindowInsets.ime.getBottom(this).toDp()
+                    }
+                )
+
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding()) {
                     TextEditor(
                         textEditorState = textEditorState,
                         onChanged = { textEditorState = it },
-                        contentPaddingValues = PaddingValues(
-                            bottom = with(LocalDensity.current) {
-                                WindowInsets.ime.getBottom(this).toDp()
-                            }
-                        ),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(bottom = if (textEditorState.isMultipleSelectionMode) 100.dp else 0.dp)
+                        contentPaddingValues = contentPaddingValues,
+                        modifier = Modifier.padding(bottom = bottomPadding)
                     ) { index, isSelected, innerTextField ->
                         val backgroundColor = if (isSelected) Color(0x806456A5) else Color.White
                         Row(
@@ -83,8 +82,7 @@ class MainActivity : ComponentActivity() {
                         ) {
                             Text(
                                 text = (index + 1).toString().padStart(3, '0'),
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
+                                modifier = Modifier.align(Alignment.CenterVertically)
                             )
 
                             innerTextField(
@@ -101,8 +99,8 @@ class MainActivity : ComponentActivity() {
                                     .padding(4.dp)
                                     .align(Alignment.CenterVertically)
                                     .clickable {
-                                        if (!textEditorState.isMultipleSelectionMode) {
-                                            textEditorState = textEditorState.copy(isMultipleSelectionMode = true)
+                                        createMultipleModeState(textEditorState)?.let {
+                                            textEditorState = it
                                             keyboardController?.hide()
                                         }
                                     }
@@ -113,32 +111,16 @@ class MainActivity : ComponentActivity() {
                     if (textEditorState.isMultipleSelectionMode) {
                         EditorMenus(
                             onCopy = {
+                                textEditorState = createCopiedState(textEditorState)
+
                                 clipboardManager.setText(AnnotatedString(textEditorState.getSelectedText()))
                                 Toast.makeText(context, "Copy text to clipboard", Toast.LENGTH_SHORT).show()
-                                textEditorState = textEditorState.copy(
-                                    fields = textEditorState.fields.map { it.copy(isSelected = false) },
-                                    isMultipleSelectionMode = false,
-                                    selectedIndices = emptyList()
-                                )
                             },
                             onDelete = {
-                                val deleteFields = textEditorState.fields.filterIndexed { index, _ ->
-                                    textEditorState.selectedIndices.contains(index)
-                                }
-                                val newFields = textEditorState.fields.toMutableList().apply {
-                                    removeAll(deleteFields)
-                                }
-                                textEditorState = textEditorState.copy(
-                                    fields = newFields,
-                                    isMultipleSelectionMode = false
-                                )
+                                textEditorState = createDeletedState(textEditorState)
                             },
                             onCancel = {
-                                textEditorState = textEditorState.copy(
-                                    fields = textEditorState.fields.map { it.copy(isSelected = false) },
-                                    isMultipleSelectionMode = false,
-                                    selectedIndices = emptyList()
-                                )
+                                textEditorState = createCancelledState(textEditorState)
                             },
                             modifier = Modifier
                                 .padding(8.dp)
@@ -151,4 +133,41 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+private fun createMultipleModeState(textEditorState: TextEditorState): TextEditorState? {
+    return if (!textEditorState.isMultipleSelectionMode) {
+        textEditorState.copy(isMultipleSelectionMode = true)
+    } else {
+        null
+    }
+}
+
+private fun createCopiedState(textEditorState: TextEditorState): TextEditorState {
+    return textEditorState.copy(
+        fields = textEditorState.fields.map { it.copy(isSelected = false) },
+        isMultipleSelectionMode = false,
+        selectedIndices = emptyList()
+    )
+}
+
+private fun createDeletedState(textEditorState: TextEditorState): TextEditorState {
+    val deleteFields = textEditorState.fields.filterIndexed { index, _ ->
+        textEditorState.selectedIndices.contains(index)
+    }
+    val newFields = textEditorState.fields.toMutableList().apply {
+        removeAll(deleteFields)
+    }
+    return textEditorState.copy(
+        fields = newFields,
+        isMultipleSelectionMode = false
+    )
+}
+
+private fun createCancelledState(textEditorState: TextEditorState): TextEditorState {
+    return textEditorState.copy(
+        fields = textEditorState.fields.map { it.copy(isSelected = false) },
+        isMultipleSelectionMode = false,
+        selectedIndices = emptyList()
+    )
 }

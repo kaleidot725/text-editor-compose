@@ -1,5 +1,7 @@
 package jp.kaleidot725.sample.ui.theme
 
+val EmptyText = " "
+
 val DemoText = """
 Android Inc. was founded in Palo Alto, California, 
 in October 2003 by Andy Rubin, Rich Miner, Nick Sears, 

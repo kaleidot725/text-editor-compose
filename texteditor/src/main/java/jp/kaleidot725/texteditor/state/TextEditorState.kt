@@ -1,7 +1,9 @@
 package jp.kaleidot725.texteditor.state
 
+import androidx.compose.runtime.Immutable
 import jp.kaleidot725.texteditor.controller.EditorController.Companion.createInitTextFieldStates
 
+@Immutable
 data class TextEditorState(
     val fields: List<TextFieldState>,
     val selectedIndices: List<Int>,

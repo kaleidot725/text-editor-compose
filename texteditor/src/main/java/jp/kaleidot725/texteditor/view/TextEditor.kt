@@ -16,7 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import jp.kaleidot725.texteditor.extension.rememberTextEditorController
+import jp.kaleidot725.texteditor.controller.rememberTextEditorController
 import jp.kaleidot725.texteditor.state.TextEditorState
 
 typealias DecorationBoxComposable = @Composable (
@@ -33,10 +33,10 @@ fun TextEditor(
     contentPaddingValues: PaddingValues = PaddingValues(),
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
+    val textEditorState by rememberUpdatedState(newValue = textEditorState)
     val editableController by rememberTextEditorController(textEditorState, onChanged = { onChanged(it) })
-    val lazyColumnState = rememberLazyListState()
     var lastEvent by remember { mutableStateOf(null as Event?) }
-    val isMultipleSelectionMode by rememberUpdatedState(newValue = textEditorState.isMultipleSelectionMode)
+    val lazyColumnState = rememberLazyListState()
 
     editableController.syncState(textEditorState)
 
@@ -83,7 +83,9 @@ fun TextEditor(
                     ) {
                         DisposableEffect(Unit) {
                             onDispose {
-                                if (!isMultipleSelectionMode) editableController.clearSelectedIndex(index)
+                                if (!textEditorState.isMultipleSelectionMode) {
+                                    editableController.clearSelectedIndex(index)
+                                }
                             }
                         }
 

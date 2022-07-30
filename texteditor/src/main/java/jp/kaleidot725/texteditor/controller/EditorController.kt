@@ -1,6 +1,9 @@
 package jp.kaleidot725.texteditor.controller
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import jp.kaleidot725.texteditor.state.TextEditorState
@@ -10,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 @Stable
-class EditorController(
+internal class EditorController(
     textEditorState: TextEditorState
 ) {
     private var onChanged: (TextEditorState) -> Unit = {}
@@ -297,4 +300,16 @@ class EditorController(
             }
         }
     }
+}
+
+@Composable
+internal fun rememberTextEditorController(
+    state: TextEditorState,
+    onChanged: (editorState: TextEditorState) -> Unit
+) = remember {
+    mutableStateOf(
+        EditorController(state).apply {
+            setOnChangedTextListener { onChanged(it) }
+        }
+    )
 }

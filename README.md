@@ -23,7 +23,7 @@
 - [x] Display line number
 - [x] Copy multiple line
 - [x] Delete multiple line
-- [ ] Support physical keyboard
+- [x] Support physical keyboard
 
 ## Usage
 
@@ -44,139 +44,85 @@ allprojects {
 
 ```groovy
 dependencies {
-	implementation 'com.github.kaleidot725:text-editor-compose:0.2.0'
+	implementation 'com.github.kaleidot725:text-editor-compose:0.3.0'
 }
 ```
 
-### Step 3: Declare TextEditor & TextEditorState
+### Step 3: Change windowSoftInputMode
+
+**AndroidManifest.xml**
+```
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Sample"
+        tools:targetApi="31">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Sample"
+            android:windowSoftInputMode="adjustResize" // !! ADD THIS LINE !!
+            >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+```
 
 ```kotlin
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            SampleTheme {
-                val textEditorState by rememberTextEditorState(lines = DemoText.lines())
-                TextEditor(
-                    textEditorState = textEditorState, 
-                    onUpdatedState = { },              
-                    modifier = Modifier.fillMaxSize() 
-                )
-            }
-        }
-    }
+
+        WindowCompat.setDecorFitsSystemWindows(window, false) // !! ADD THIS LINE !!
+        
+	}
 }
 ```
 
-### Step 4: Customize text fields
+### Step 4: Declare TextEditor & TextEditorState
 
 ```kotlin
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
             SampleTheme {
-                val textEditorState by rememberTextEditorState(lines = DemoText.lines())
-                TextEditor(
-                    textEditorState = textEditorState,
-                    onUpdatedState = { },
-                    modifier = Modifier.fillMaxSize(),
-                    decorationBox = { index, isSelected, innerTextField ->
-                        val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
-                        Row(modifier = Modifier.background(backgroundColor)) {
-                            Text(text = (index + 1).toString().padStart(3, '0'))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            innerTextField(modifier = Modifier.fillMaxWidth())
-                        }
-                    }
+                var textEditorState by remember { mutableStateOf(TextEditorState.create(DemoText)) }
+                val contentPaddingValues = PaddingValues(
+                    bottom = with(LocalDensity.current) { WindowInsets.ime.getBottom(this).toDp() }
                 )
+
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding()) {
+                    TextEditor(
+                        textEditorState = textEditorState,
+                        onChanged = { textEditorState = it },
+                        contentPaddingValues = contentPaddingValues,
+                    )
+                }
             }
-        }
-    }
-}
-```
-
-### Step 5: Create multiple selection menu
-
-```kotlin
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            SampleTheme {
-                val textEditorState by rememberTextEditorState(lines = DemoText.lines())
-                TextEditor(
-                    textEditorState = textEditorState,
-                    onUpdatedState = { },
-                    modifier = Modifier.fillMaxSize(),
-                    decorationBox = { index, isSelected, innerTextField ->
-                        val backgroundColor = if (isSelected) Color(0x8000ff00) else Color.White
-                        Row(modifier = Modifier.background(backgroundColor)) {
-                            Text(text = (index + 1).toString().padStart(3, '0'))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            innerTextField(modifier = Modifier.fillMaxWidth())
-                        }
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
-    val context: Context = LocalContext.current
-    val clipboardManager: ClipboardManager = LocalClipboardManager.current
-
-    Row(modifier = Modifier.padding(8.dp)) {
-        Text(
-            text = "Enable multiple selection mode",
-            modifier = Modifier
-                .weight(0.9f, true)
-                .align(Alignment.CenterVertically)
-        )
-        Switch(
-            checked = textEditorState.isMultipleSelectionMode.value,
-            onCheckedChange = {
-                textEditorState.enableMultipleSelectionMode(
-                    !textEditorState.isMultipleSelectionMode.value
-                )
-            }
-        )
-    }
-
-    Row(modifier = Modifier.padding(8.dp)) {
-        Text(
-            text = "Copy selected lines",
-            modifier = Modifier
-                .weight(0.9f, true)
-                .align(Alignment.CenterVertically)
-        )
-        Button(
-            onClick = {
-                val text = textEditorState.getSelectedText()
-                textEditorState.enableMultipleSelectionMode(false)
-
-                clipboardManager.setText(AnnotatedString(text))
-                Toast.makeText(context, "Copy selected text to clipboard", Toast.LENGTH_SHORT).show()
-            }
-        ) {
-            Text(text = "EXECUTE")
-        }
-    }
-    
-    Row(modifier = Modifier.padding(8.dp)) {
-        Text(
-            text = "Delete selected lines",
-            modifier = Modifier
-                .weight(0.9f, true)
-                .align(Alignment.CenterVertically)
-        )
-        Button(onClick = {
-            textEditorState.deleteSelectedLines()
-            textEditorState.enableMultipleSelectionMode(false)
-        }) {
-            Text(text = "EXECUTE")
         }
     }
 }
@@ -192,18 +138,10 @@ private fun ColumnScope.TextEditorMenu(textEditorState: TextEditorState) {
 
 ![Insert and delete newline](./docs/2.gif)
 
-### Get selected line index
-
-![Get selected line index](./docs/3.gif)
-
-### Display line number
-
-![Display line number](./docs/4.gif)
-
 ### Copy multiple line
 
-![Copy multiple line](./docs/5.gif)
+![Copy multiple line](./docs/3.gif)
 
 ### Delete multiple line
 
-![Delete multiple line](./docs/6.gif)
+![Delete multiple line](./docs/4.gif)

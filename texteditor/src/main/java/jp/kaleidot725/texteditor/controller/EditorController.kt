@@ -12,7 +12,6 @@ import java.security.InvalidParameterException
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-@Stable
 internal class EditorController(
     textEditorState: TextEditorState
 ) {

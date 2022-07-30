@@ -1,5 +1,6 @@
 package jp.kaleidot725.texteditor.view
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import jp.kaleidot725.texteditor.controller.rememberTextEditorController
 import jp.kaleidot725.texteditor.state.TextEditorState
 
@@ -37,6 +39,7 @@ fun TextEditor(
     val editableController by rememberTextEditorController(textEditorState, onChanged = { onChanged(it) })
     var lastEvent by remember { mutableStateOf(null as Event?) }
     val lazyColumnState = rememberLazyListState()
+    val focusRequesters by remember { mutableStateOf(mutableMapOf<Int, FocusRequester>()) }
 
     editableController.syncState(textEditorState)
 
@@ -58,6 +61,15 @@ fun TextEditor(
         }
     }
 
+    LaunchedEffect(textEditorState.selectedIndices) {
+        val targetIndex = textEditorState.selectedIndices.firstOrNull() ?: return@LaunchedEffect
+        try {
+            focusRequesters[targetIndex]?.requestFocus()
+        } catch (e: Exception) {
+            Log.d("TextEditor", "Warning $e")
+        }
+    }
+
     LazyColumn(
         state = lazyColumnState,
         modifier = modifier,
@@ -67,6 +79,15 @@ fun TextEditor(
             items = textEditorState.fields,
             key = { _, item -> item.id }
         ) { index, textFieldState ->
+            val focusRequester by remember { mutableStateOf(FocusRequester()) }
+
+            DisposableEffect(Unit) {
+                focusRequesters[index] = focusRequester
+                onDispose {
+                    focusRequesters.remove(index)
+                }
+            }
+
             decorationBox(
                 index = index,
                 isSelected = textFieldState.isSelected,
@@ -92,6 +113,7 @@ fun TextEditor(
                         TextField(
                             textFieldState = textFieldState,
                             enabled = !textEditorState.isMultipleSelectionMode,
+                            focusRequester = focusRequester,
                             onUpdateText = { newText ->
                                 editableController.updateField(targetIndex = index, textFieldValue = newText)
                             },

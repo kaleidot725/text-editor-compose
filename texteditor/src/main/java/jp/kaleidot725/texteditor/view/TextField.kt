@@ -11,8 +11,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -31,6 +29,7 @@ import jp.kaleidot725.texteditor.state.TextFieldState
 internal fun TextField(
     textFieldState: TextFieldState,
     enabled: Boolean,
+    focusRequester: FocusRequester,
     onUpdateText: (TextFieldValue) -> Unit,
     onContainNewLine: (TextFieldValue) -> Unit,
     onAddNewLine: (TextFieldValue) -> Unit,
@@ -41,7 +40,6 @@ internal fun TextField(
     modifier: Modifier = Modifier
 ) {
     val currentTextField by rememberUpdatedState(newValue = textFieldState.value)
-    val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
     LaunchedEffect(textFieldState.isSelected) {
         if (textFieldState.isSelected) {

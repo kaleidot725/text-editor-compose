@@ -1,6 +1,5 @@
 package jp.kaleidot725.sample
 
-import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -28,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -38,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import jp.kaleidot725.sample.ui.component.EditorMenus
 import jp.kaleidot725.sample.ui.component.FieldIcon
-import jp.kaleidot725.sample.ui.theme.EmptyText
+import jp.kaleidot725.sample.ui.theme.DemoText
 import jp.kaleidot725.sample.ui.theme.SampleTheme
 import jp.kaleidot725.texteditor.state.TextEditorState
 import jp.kaleidot725.texteditor.view.TextEditor
@@ -52,9 +50,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SampleTheme {
-                var textEditorState by remember { mutableStateOf(TextEditorState.create(EmptyText)) }
-                val context: Context = LocalContext.current
-                val clipboardManager: ClipboardManager = LocalClipboardManager.current
+                var textEditorState by remember { mutableStateOf(TextEditorState.create(DemoText)) }
+                val context = LocalContext.current
+                val clipboardManager = LocalClipboardManager.current
                 val keyboardController = LocalSoftwareKeyboardController.current
 
                 val bottomPadding = if (textEditorState.isMultipleSelectionMode) 100.dp else 0.dp
@@ -64,9 +62,11 @@ class MainActivity : ComponentActivity() {
                     }
                 )
 
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .systemBarsPadding()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .systemBarsPadding()
+                ) {
                     TextEditor(
                         textEditorState = textEditorState,
                         onChanged = { textEditorState = it },

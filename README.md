@@ -50,8 +50,6 @@ dependencies {
 
 ### Step 3: Change windowSoftInputMode
 
-**AndroidManifest.xml**
-
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -74,7 +72,7 @@ dependencies {
 </manifest>
 ```
 
-**MainActivity.kt**
+### Step 4: Change DecorFitsSystemWindows
 
 ```kotlin
 class MainActivity : ComponentActivity() {
@@ -88,7 +86,7 @@ class MainActivity : ComponentActivity() {
 }
 ```
 
-### Step 4: Declare TextEditor & TextEditorState
+### Step 5: Declare TextEditor & TextEditorState
 
 ```kotlin
 class MainActivity : ComponentActivity() {

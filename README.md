@@ -101,13 +101,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             SampleTheme {
                 var textEditorState by remember { mutableStateOf(TextEditorState.create(DemoText)) }
-                val contentPaddingValues = PaddingValues(
-                    bottom = with(LocalDensity.current) { WindowInsets.ime.getBottom(this).toDp() }
-                )
-
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .systemBarsPadding()) {
+		val bottomPaddingValue = with(LocalDensity.current) { WindowInsets.ime.getBottom(this).toDp() }
+                val contentPaddingValues = PaddingValues(bottom = bottomPaddingValue)
+		
+                Box(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
                     TextEditor(
                         textEditorState = textEditorState,
                         onChanged = { textEditorState = it },

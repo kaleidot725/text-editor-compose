@@ -15,7 +15,7 @@
     <img align="center" width=400 src="https://github.com/kaleidot725/text-editor-compose/blob/main/demo.gif">
 </h3>
 
-## Features
+## ✨Features
 
 - [x] Edit multiple line text
 - [x] Insert and delete newline
@@ -25,7 +25,7 @@
 - [x] Delete multiple line
 - [x] Support physical keyboard
 
-## Usage
+## 🪄Usage
 
 This library is easy to use, just follow the steps below to add a dependency and write codes.
 
@@ -117,20 +117,38 @@ class MainActivity : ComponentActivity() {
 }
 ```
 
-## Demo
+## 🧪Demo
 
-### Edit multiple line text
+Check out the demo code [here](https://github.com/kaleidot725/text-editor-compose/blob/main/app/src/main/java/jp/kaleidot725/sample/ui/composable/Demo.kt).
 
-![Edit multiple line text](./docs/1.gif)
+| No | Title | Movie |
+| --- | ---- | ---- |
+| 1 | Edit multiple line text | ![Edit multiple line text](./docs/1.gif) |
+| 2 | Insert and delete newline | ![Insert and delete newline](./docs/2.gif) |
+| 3 | Copy multiple line | ![Insert and delete newline](./docs/3.gif) |
+| 4 | Delete multiple line | ![Insert and delete newline](./docs/4.gif) |
 
-### Insert and delete newline
+## 💡License
 
-![Insert and delete newline](./docs/2.gif)
 
-### Copy multiple line
+```
+Copyright (c) 2022 Yusuke Katsuragawa
 
-![Copy multiple line](./docs/3.gif)
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-### Delete multiple line
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-![Delete multiple line](./docs/4.gif)
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

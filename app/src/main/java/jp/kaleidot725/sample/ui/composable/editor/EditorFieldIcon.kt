@@ -1,4 +1,4 @@
-package jp.kaleidot725.sample.ui.component
+package jp.kaleidot725.sample.ui.composable
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,4 @@
-package jp.kaleidot725.sample.ui.component
+package jp.kaleidot725.sample.ui.composable
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -28,25 +28,25 @@ fun EditorMenus(
                 icon = { CopyIcon() },
                 label = { Text(text = "Copy") },
                 modifier = Modifier
-                    .weight(0.2f)
-                    .align(Alignment.CenterVertically)
-                    .clickable { onCopy() }
+                        .weight(0.2f)
+                        .align(Alignment.CenterVertically)
+                        .clickable { onCopy() }
             )
             EditorMenu(
                 icon = { TrashIcon() },
                 label = { Text(text = "Delete") },
                 modifier = Modifier
-                    .weight(0.2f)
-                    .align(Alignment.CenterVertically)
-                    .clickable { onDelete() }
+                        .weight(0.2f)
+                        .align(Alignment.CenterVertically)
+                        .clickable { onDelete() }
             )
             EditorMenu(
                 icon = { CancelIcon() },
                 label = { Text(text = "Cancel") },
                 modifier = Modifier
-                    .weight(0.2f)
-                    .align(Alignment.CenterVertically)
-                    .clickable { onCancel() }
+                        .weight(0.2f)
+                        .align(Alignment.CenterVertically)
+                        .clickable { onCancel() }
             )
         }
     }

@@ -4,12 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
-import jp.kaleidot725.sample.ui.composable.SamplePage
+import jp.kaleidot725.sample.ui.composable.Demo
+import jp.kaleidot725.sample.ui.theme.DemoText
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        setContent { SamplePage() }
+        setContent { Demo(DemoText) }
     }
 }

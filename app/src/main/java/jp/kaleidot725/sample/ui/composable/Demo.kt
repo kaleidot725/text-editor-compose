@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import jp.kaleidot725.sample.ui.extension.createCancelledState
 import jp.kaleidot725.sample.ui.extension.createCopiedState
@@ -40,11 +41,11 @@ import jp.kaleidot725.texteditor.view.TextEditor
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SamplePage() {
+fun Demo(text: String) {
     val clipboardManager = LocalClipboardManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    var textEditorState by remember { mutableStateOf(TextEditorState.create(DemoText)) }
+    var textEditorState by remember { mutableStateOf(TextEditorState.create(text)) }
     val bottomPadding = if (textEditorState.isMultipleSelectionMode) 100.dp else 0.dp
     val contentBottomPaddingValue = with(LocalDensity.current) { WindowInsets.ime.getBottom(this).toDp() }
     val contentPaddingValues = PaddingValues(bottom = contentBottomPaddingValue)
@@ -127,4 +128,10 @@ private fun getLineNumber(index: Int): String {
 
 private fun getBackgroundColor(isSelected: Boolean): Color {
     return if (isSelected) Color(0x806456A5) else Color.White
+}
+
+@Preview
+@Composable
+private fun Demo_Preview() {
+    Demo(DemoText)
 }

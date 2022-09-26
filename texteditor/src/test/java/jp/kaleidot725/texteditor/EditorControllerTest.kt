@@ -175,7 +175,7 @@ class EditorControllerTest : StringSpec({
         controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "aaa\n"))
 
         controller.fields.count() shouldBe 2
-        controller.fields[0].value shouldBe TextFieldValue(text = "aaa")
+        controller.fields[0].value shouldBe TextFieldValue(text = "aaa", selection = TextRange("aaa".count()))
         controller.fields[0].isSelected shouldBe false
         controller.fields[1].value shouldBe TextFieldValue(text = "")
         controller.fields[1].isSelected shouldBe true
@@ -185,7 +185,7 @@ class EditorControllerTest : StringSpec({
         controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "aa\naa"))
 
         controller.fields.count() shouldBe 2
-        controller.fields[0].value shouldBe TextFieldValue(text = "aa")
+        controller.fields[0].value shouldBe TextFieldValue(text = "aa", selection = TextRange("aa".count()))
         controller.fields[0].isSelected shouldBe false
         controller.fields[1].value shouldBe TextFieldValue(text = "aa")
         controller.fields[1].isSelected shouldBe true
@@ -195,7 +195,7 @@ class EditorControllerTest : StringSpec({
         controller.splitNewLine(targetIndex = 0, TextFieldValue(text = "a\nb\nc\nd"))
 
         controller.fields.count() shouldBe 4
-        controller.fields[0].value shouldBe TextFieldValue(text = "a")
+        controller.fields[0].value shouldBe TextFieldValue(text = "a", selection = TextRange("a".count()))
         controller.fields[0].isSelected shouldBe false
         controller.fields[1].value shouldBe TextFieldValue(text = "b")
         controller.fields[1].isSelected shouldBe false

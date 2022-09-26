@@ -1,7 +1,6 @@
 package jp.kaleidot725.texteditor.controller
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextRange
@@ -279,7 +278,19 @@ internal class EditorController(
     }
 
     private fun TextFieldValue.splitTextsByNL(): List<TextFieldValue> {
-        return this.text.split("\n").map { TextFieldValue(it, TextRange.Zero) }
+        var position = 0
+        val splitTexts = this.text.split("\n").map {
+            position += it.count()
+            it to position
+        }
+
+        return splitTexts.mapIndexed { index, pair ->
+            if (index == 0) {
+                TextFieldValue(pair.first, TextRange(pair.second))
+            } else {
+                TextFieldValue(pair.first, TextRange.Zero)
+            }
+        }
     }
 
     private enum class SelectionOption {

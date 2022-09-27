@@ -98,7 +98,7 @@ class EditorControllerTest : StringSpec({
             one
             two
             three
-        """.trimIndent().lines()
+                """.trimIndent().lines()
             )
         )
         controller.isMultipleSelectionMode shouldBe false
@@ -281,7 +281,7 @@ class EditorControllerTest : StringSpec({
 
         controller.fields.count() shouldBe 1
         controller.fields[0].value shouldBe
-                TextFieldValue(text = "abcdef", selection = TextRange("abc".count()))
+            TextFieldValue(text = "abcdef", selection = TextRange("abc".count()))
         controller.fields[0].isSelected shouldBe true
     }
     "delete_field_when_input_invalid_target_index" {

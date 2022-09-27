@@ -1,6 +1,10 @@
 buildscript {
     ext {
-        compose_ui_version = '1.2.0'
+        core_ktx_version = '1.9.0'
+        lifecycle_ktx_version = '2.5.1'
+        activity_compose_version = '1.6.0'
+        compose_ui_version = '1.2.1'
+        kotest_version = '5.3.1'
     }
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {

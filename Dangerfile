@@ -3,5 +3,4 @@ warn("Big PR") if git.lines_of_code > 500
 
 # Notify ktlint warning
 checkstyle_format.base_path = Dir.pwd
-checkstyle_format.report 'app/build/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.txt'
-checkstyle_format.report 'texteditor/build/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.txt'
+checkstyle_format.report 'build/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.txt'

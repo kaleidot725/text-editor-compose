@@ -11,6 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import jp.kaleidot725.sample.ui.composable.editor.CancelIcon
+import jp.kaleidot725.sample.ui.composable.editor.CopyIcon
+import jp.kaleidot725.sample.ui.composable.editor.TrashIcon
 
 @Composable
 fun EditorMenus(
@@ -28,25 +31,25 @@ fun EditorMenus(
                 icon = { CopyIcon() },
                 label = { Text(text = "Copy") },
                 modifier = Modifier
-                        .weight(0.2f)
-                        .align(Alignment.CenterVertically)
-                        .clickable { onCopy() }
+                    .weight(0.2f)
+                    .align(Alignment.CenterVertically)
+                    .clickable { onCopy() }
             )
             EditorMenu(
                 icon = { TrashIcon() },
                 label = { Text(text = "Delete") },
                 modifier = Modifier
-                        .weight(0.2f)
-                        .align(Alignment.CenterVertically)
-                        .clickable { onDelete() }
+                    .weight(0.2f)
+                    .align(Alignment.CenterVertically)
+                    .clickable { onDelete() }
             )
             EditorMenu(
                 icon = { CancelIcon() },
                 label = { Text(text = "Cancel") },
                 modifier = Modifier
-                        .weight(0.2f)
-                        .align(Alignment.CenterVertically)
-                        .clickable { onCancel() }
+                    .weight(0.2f)
+                    .align(Alignment.CenterVertically)
+                    .clickable { onCancel() }
             )
         }
     }

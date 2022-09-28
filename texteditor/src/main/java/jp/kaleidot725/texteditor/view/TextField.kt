@@ -47,28 +47,29 @@ internal fun TextField(
         }
     }
 
-    Box(modifier = modifier
-        .focusTarget()
-        .focusRequester(focusRequester)
-        .onFocusChanged { if (it.isFocused) onFocus() }
-        .onPreviewKeyEvent { event ->
-            val value = textFieldState.value
-            val selection = currentTextField.selection
+    Box(
+        modifier = modifier
+            .focusTarget()
+            .focusRequester(focusRequester)
+            .onFocusChanged { if (it.isFocused) onFocus() }
+            .onPreviewKeyEvent { event ->
+                val value = textFieldState.value
+                val selection = currentTextField.selection
 
-            val b1 = onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }
-            if (b1) return@onPreviewKeyEvent true
+                val b1 = onPreviewDelKeyEvent(event, selection) { onDeleteNewLine() }
+                if (b1) return@onPreviewKeyEvent true
 
-            val b2 = onPreviewDownKeyEvent(event, value) { onDownFocus() }
-            if (b2) return@onPreviewKeyEvent true
+                val b2 = onPreviewDownKeyEvent(event, value) { onDownFocus() }
+                if (b2) return@onPreviewKeyEvent true
 
-            val b3 = onPreviewUpKeyEvent(event, selection) { onUpFocus() }
-            if (b3) return@onPreviewKeyEvent true
+                val b3 = onPreviewUpKeyEvent(event, selection) { onUpFocus() }
+                if (b3) return@onPreviewKeyEvent true
 
-            val b4 = onPreviewEnterKeyEvent(event, selection) { onAddNewLine(currentTextField) }
-            if (b4) return@onPreviewKeyEvent true
+                val b4 = onPreviewEnterKeyEvent(event, selection) { onAddNewLine(currentTextField) }
+                if (b4) return@onPreviewKeyEvent true
 
-            false
-        }
+                false
+            }
     ) {
         BasicTextField(
             value = textFieldState.value,

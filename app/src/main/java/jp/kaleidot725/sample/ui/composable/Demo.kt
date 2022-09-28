@@ -38,7 +38,6 @@ import jp.kaleidot725.sample.ui.theme.DemoText
 import jp.kaleidot725.texteditor.state.TextEditorState
 import jp.kaleidot725.texteditor.view.TextEditor
 
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Demo(text: String) {

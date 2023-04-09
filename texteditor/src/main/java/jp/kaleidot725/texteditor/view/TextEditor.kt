@@ -1,6 +1,5 @@
 package jp.kaleidot725.texteditor.view
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -20,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import jp.kaleidot725.texteditor.controller.rememberTextEditorController
 import jp.kaleidot725.texteditor.state.TextEditorState
+import java.util.Date
 
 typealias DecorationBoxComposable = @Composable (
     index: Int,
@@ -37,37 +37,14 @@ fun TextEditor(
 ) {
     val textEditorState by rememberUpdatedState(newValue = textEditorState)
     val editableController by rememberTextEditorController(textEditorState, onChanged = { onChanged(it) })
-    var lastEvent by remember { mutableStateOf(null as Event?) }
+    var lastScrollEvent by remember { mutableStateOf(null as ScrollEvent?) }
     val lazyColumnState = rememberLazyListState()
     val focusRequesters by remember { mutableStateOf(mutableMapOf<Int, FocusRequester>()) }
 
     editableController.syncState(textEditorState)
 
-    LaunchedEffect(lastEvent) {
-        when (val event = lastEvent) {
-            is Event.AddNewLine -> {
-                lazyColumnState.animateScrollToItem(event.index)
-            }
-            is Event.DeleteNewLine -> {
-                lazyColumnState.animateScrollToItem(event.index)
-            }
-            is Event.Down -> {
-                lazyColumnState.animateScrollToItem(event.index)
-            }
-            is Event.Up -> {
-                lazyColumnState.animateScrollToItem(event.index)
-            }
-            else -> {}
-        }
-    }
-
-    LaunchedEffect(textEditorState.selectedIndices) {
-        val targetIndex = textEditorState.selectedIndices.firstOrNull() ?: return@LaunchedEffect
-        try {
-            focusRequesters[targetIndex]?.requestFocus()
-        } catch (e: Exception) {
-            Log.d("TextEditor", "Warning $e")
-        }
+    LaunchedEffect(lastScrollEvent) {
+        lastScrollEvent?.index?.let { lazyColumnState.scrollToItem(it) }
     }
 
     LazyColumn(
@@ -119,26 +96,26 @@ fun TextEditor(
                             },
                             onContainNewLine = { newText ->
                                 editableController.splitNewLine(targetIndex = index, textFieldValue = newText)
-                                lastEvent = Event.AddNewLine(index + 1)
+                                lastScrollEvent = ScrollEvent(index + 1)
                             },
                             onAddNewLine = { newText ->
                                 editableController.splitAtCursor(targetIndex = index, textFieldValue = newText)
-                                lastEvent = Event.AddNewLine(index + 1)
+                                lastScrollEvent = ScrollEvent(index + 1)
                             },
                             onDeleteNewLine = {
                                 editableController.deleteField(targetIndex = index)
-                                if (index != 0) lastEvent = Event.DeleteNewLine(index - 1)
+                                if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
                             },
                             onFocus = {
                                 editableController.selectField(index)
                             },
                             onUpFocus = {
                                 editableController.selectPreviousField()
-                                if (index != 0) lastEvent = Event.DeleteNewLine(index - 1)
+                                if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
                             },
                             onDownFocus = {
                                 editableController.selectNextField()
-                                lastEvent = Event.AddNewLine(index + 1)
+                                lastScrollEvent = ScrollEvent(index + 1)
                             }
                         )
                     }
@@ -148,9 +125,4 @@ fun TextEditor(
     }
 }
 
-sealed class Event(val time: Long, val index: Int = -1) {
-    class Up(index: Int) : Event(System.currentTimeMillis(), index)
-    class Down(index: Int) : Event(System.currentTimeMillis(), index)
-    class AddNewLine(index: Int) : Event(System.currentTimeMillis(), index)
-    class DeleteNewLine(index: Int) : Event(System.currentTimeMillis(), index)
-}
+data class ScrollEvent(val index: Int = -1, val time: Long = Date().time)

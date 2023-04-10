@@ -40,7 +40,6 @@ fun TextEditor(
     var lastScrollEvent by remember { mutableStateOf(null as ScrollEvent?) }
     val lazyColumnState = rememberLazyListState()
     val focusRequesters by remember { mutableStateOf(mutableMapOf<Int, FocusRequester>()) }
-
     editableController.syncState(textEditorState)
 
     LaunchedEffect(lastScrollEvent) {
@@ -95,14 +94,17 @@ fun TextEditor(
                                 editableController.updateField(targetIndex = index, textFieldValue = newText)
                             },
                             onContainNewLine = { newText ->
+                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
                                 editableController.splitNewLine(targetIndex = index, textFieldValue = newText)
                                 lastScrollEvent = ScrollEvent(index + 1)
                             },
                             onAddNewLine = { newText ->
+                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
                                 editableController.splitAtCursor(targetIndex = index, textFieldValue = newText)
                                 lastScrollEvent = ScrollEvent(index + 1)
                             },
                             onDeleteNewLine = {
+                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
                                 editableController.deleteField(targetIndex = index)
                                 if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
                             },
@@ -110,13 +112,16 @@ fun TextEditor(
                                 editableController.selectField(index)
                             },
                             onUpFocus = {
+                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
                                 editableController.selectPreviousField()
                                 if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
                             },
                             onDownFocus = {
+                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
                                 editableController.selectNextField()
-                                lastScrollEvent = ScrollEvent(index + 1)
-                            }
+                                if (index != textEditorState.fields.lastIndex) lastScrollEvent = ScrollEvent(index + 1)
+                            },
+                            scrollEvent = if (lastScrollEvent?.index == index) lastScrollEvent else null
                         )
                     }
                 }
@@ -125,4 +130,11 @@ fun TextEditor(
     }
 }
 
-data class ScrollEvent(val index: Int = -1, val time: Long = Date().time)
+data class ScrollEvent(val index: Int = -1, val time: Long = Date().time) {
+    var isConsumed: Boolean = false
+        private set
+
+    fun consume() {
+        isConsumed = true
+    }
+}

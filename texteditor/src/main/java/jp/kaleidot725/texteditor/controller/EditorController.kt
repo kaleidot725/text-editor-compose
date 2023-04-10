@@ -1,5 +1,6 @@
 package jp.kaleidot725.texteditor.controller
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -8,6 +9,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import jp.kaleidot725.texteditor.state.TextEditorState
 import jp.kaleidot725.texteditor.state.TextFieldState
 import java.security.InvalidParameterException
+import java.util.Date
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -44,6 +46,10 @@ internal class EditorController(
 
     fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
+            if (_fields.count { it.isSelected } > 1) {
+                Log.v("TEST", "NEWLINE ERROR")
+            }
+
             if (targetIndex < 0 || fields.count() <= targetIndex) {
                 throw InvalidParameterException("targetIndex out of range($targetIndex)")
             }
@@ -69,7 +75,14 @@ internal class EditorController(
     }
 
     fun splitAtCursor(targetIndex: Int, textFieldValue: TextFieldValue) {
+        val date = Date().time
         lock.withLock {
+            Log.v("TEST", "$date start")
+
+            if (_fields.count { it.isSelected } > 1) {
+                Log.v("TEST", "CURSOR ERROR ${_fields.filter { it.isSelected }}")
+            }
+
             if (targetIndex < 0 || fields.count() <= targetIndex) {
                 throw InvalidParameterException("targetIndex out of range($targetIndex)")
             }
@@ -97,6 +110,9 @@ internal class EditorController(
 
             selectFieldInternal(targetIndex + 1)
             onChanged(state)
+
+            Log.v("TEST", "SELECTED ${_fields.filter { it.isSelected }}")
+            Log.v("TEST", "$date end")
         }
     }
 
@@ -228,9 +244,9 @@ internal class EditorController(
     }
 
     private fun clearSelectedIndicesInternal() {
-        _selectedIndices
-            .filter { _fields.getOrNull(it) != null }
-            .forEach { index -> _fields[index] = _fields[index].copy(isSelected = false) }
+        val copyFields = _fields.toList().map { it.copy(isSelected = false) }
+        _fields.clear()
+        _fields.addAll(copyFields)
         _selectedIndices.clear()
     }
 
@@ -266,9 +282,8 @@ internal class EditorController(
                 targetIndex
             )
         } else {
-            val isSelected = true
             val copyTarget = target.copy(
-                isSelected = isSelected,
+                isSelected = true,
                 value = target.value.copy(selection = selection)
             )
             this.clearSelectedIndicesInternal()

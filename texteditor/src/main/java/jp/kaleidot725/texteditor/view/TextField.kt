@@ -4,7 +4,6 @@ import android.view.KeyEvent.KEYCODE_DEL
 import android.view.KeyEvent.KEYCODE_DPAD_DOWN
 import android.view.KeyEvent.KEYCODE_DPAD_UP
 import android.view.KeyEvent.KEYCODE_ENTER
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicTextField
@@ -37,18 +36,28 @@ internal fun TextField(
     onFocus: () -> Unit,
     onUpFocus: () -> Unit,
     onDownFocus: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    scrollEvent: ScrollEvent? = null
 ) {
     val currentTextField by rememberUpdatedState(newValue = textFieldState.value)
 
     LaunchedEffect(textFieldState.isSelected) {
         if (textFieldState.isSelected) {
+            scrollEvent?.consume()
             focusRequester.requestFocus()
         }
     }
 
-    Box(
+    BasicTextField(
+        value = textFieldState.value,
+        enabled = enabled,
+        onValueChange = {
+            if (currentTextField == it) return@BasicTextField
+            if (it.text.contains('\n')) onContainNewLine(it) else onUpdateText(it)
+        },
         modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
             .focusTarget()
             .focusRequester(focusRequester)
             .onFocusChanged { if (it.isFocused) onFocus() }
@@ -70,19 +79,7 @@ internal fun TextField(
 
                 false
             }
-    ) {
-        BasicTextField(
-            value = textFieldState.value,
-            enabled = enabled,
-            onValueChange = {
-                if (currentTextField == it) return@BasicTextField
-                if (it.text.contains('\n')) onContainNewLine(it) else onUpdateText(it)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-        )
-    }
+    )
 }
 
 private fun onPreviewDelKeyEvent(

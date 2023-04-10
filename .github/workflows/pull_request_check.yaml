@@ -15,7 +15,7 @@ jobs:
           java-version: '17'
       - uses: actions/setup-ruby@v1
         with:
-          ruby-version: '2.7'
+          ruby-version: '3.0'
       - name: Install danger
         run: |
           gem install danger danger-junit danger-android_lint danger-checkstyle_format

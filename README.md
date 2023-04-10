@@ -44,8 +44,7 @@ allprojects {
 
 ```groovy
 dependencies {
-	implementation 'com.github.kaleidot725:text-editor-compose:0.3.1'
-}
+	implementation 'com.github.kaleidot725:text-editor-compose:0.4.0'
 ```
 
 ### Step 3: Change windowSoftInputMode

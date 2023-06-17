@@ -4,6 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -17,6 +20,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.unit.dp
 import jp.kaleidot725.texteditor.controller.rememberTextEditorController
 import jp.kaleidot725.texteditor.state.TextEditorState
 import java.util.Date
@@ -43,7 +47,13 @@ fun TextEditor(
     editableController.syncState(textEditorState)
 
     LaunchedEffect(lastScrollEvent) {
-        lastScrollEvent?.index?.let { lazyColumnState.animateScrollToItem(it) }
+        lastScrollEvent?.index?.let { index ->
+            val first = lazyColumnState.layoutInfo.visibleItemsInfo.minBy { it.index }.index
+            val end = lazyColumnState.layoutInfo.visibleItemsInfo.maxBy { it.index }.index
+            if (index < first || end < index) {
+                lazyColumnState.animateScrollToItem(index)
+            }
+        }
     }
 
     LazyColumn(
@@ -126,6 +136,10 @@ fun TextEditor(
                     }
                 }
             )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }

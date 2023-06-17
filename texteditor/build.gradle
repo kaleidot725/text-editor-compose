@@ -64,7 +64,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.kaleidot725'
                 artifactId = 'text-editor-compose'
-                version = '0.4.1'
+                version = '0.5.0'
             }
         }
     }

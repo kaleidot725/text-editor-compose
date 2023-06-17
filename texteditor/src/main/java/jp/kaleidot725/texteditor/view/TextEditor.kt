@@ -43,7 +43,7 @@ fun TextEditor(
     editableController.syncState(textEditorState)
 
     LaunchedEffect(lastScrollEvent) {
-        lastScrollEvent?.index?.let { lazyColumnState.scrollToItem(it) }
+        lastScrollEvent?.index?.let { lazyColumnState.animateScrollToItem(it) }
     }
 
     LazyColumn(

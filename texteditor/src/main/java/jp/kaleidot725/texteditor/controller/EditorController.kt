@@ -45,10 +45,6 @@ internal class EditorController(
 
     fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
         lock.withLock {
-            if (_fields.count { it.isSelected } > 1) {
-                Log.v("TEST", "NEWLINE ERROR")
-            }
-
             if (targetIndex < 0 || fields.count() <= targetIndex) {
                 throw InvalidParameterException("targetIndex out of range($targetIndex)")
             }

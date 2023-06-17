@@ -45,9 +45,10 @@ allprojects {
 ```groovy
 dependencies {
 	implementation 'com.github.kaleidot725:text-editor-compose:0.5.0'
+}
 ```
 
-### Step 4: Declare TextEditor & TextEditorState
+### Step 3: Declare TextEditor & TextEditorState
 
 ```kotlin
 class MainActivity : ComponentActivity() {

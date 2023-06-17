@@ -44,57 +44,17 @@ allprojects {
 
 ```groovy
 dependencies {
-	implementation 'com.github.kaleidot725:text-editor-compose:0.4.0'
+	implementation 'com.github.kaleidot725:text-editor-compose:0.5.0'
 ```
 
-### Step 3: Change windowSoftInputMode
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <application
-		︙
-	>
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.Sample"
-            android:windowSoftInputMode="adjustResize" // !! ADD THIS LINE !!
-            >
-          	︙
-        </activity>
-    </application>
-
-</manifest>
-```
-
-### Step 4: Change DecorFitsSystemWindows
+### Step 4: Declare TextEditor & TextEditorState
 
 ```kotlin
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-		︙
-        WindowCompat.setDecorFitsSystemWindows(window, false) // !! ADD THIS LINE !!
-        	︙
-    }
-}
-```
-
-### Step 5: Declare TextEditor & TextEditorState
-
-```kotlin
-class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalComposeUiApi::class)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
+	
         setContent {
             SampleTheme {
                 var textEditorState by remember { mutableStateOf(TextEditorState.create(DemoText)) }

@@ -44,7 +44,7 @@ allprojects {
 
 ```groovy
 dependencies {
-	implementation 'com.github.kaleidot725:text-editor-compose:0.5.0'
+	implementation 'com.github.kaleidot725:text-editor-compose:0.5.1'
 }
 ```
 

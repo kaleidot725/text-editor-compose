@@ -58,7 +58,7 @@ internal class EditorController(
             _fields[targetIndex] =
                 _fields[targetIndex].copy(value = firstSplitFieldValue, isSelected = false)
 
-            val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
+            val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.lastIndex)
             val newSplitFieldStates =
                 newSplitFieldValues.map { TextFieldState(value = it, isSelected = false) }
             _fields.addAll(targetIndex + 1, newSplitFieldStates)
@@ -249,7 +249,7 @@ internal class EditorController(
             SelectionOption.FIRST_POSITION -> TextRange.Zero
             SelectionOption.LAST_POSITION -> {
                 if (target.value.text.lastIndex != -1) {
-                    TextRange(target.value.text.lastIndex)
+                    TextRange(target.value.text.lastIndex + 1)
                 } else {
                     TextRange.Zero
                 }

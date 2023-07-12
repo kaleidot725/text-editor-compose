@@ -44,9 +44,11 @@ fun TextEditor(
     var lastScrollEvent by remember { mutableStateOf(null as ScrollEvent?) }
     val lazyColumnState = rememberLazyListState()
     val focusRequesters by remember { mutableStateOf(mutableMapOf<Int, FocusRequester>()) }
+
     editableController.syncState(textEditorState)
 
     LaunchedEffect(lastScrollEvent) {
+        lastScrollEvent?.consume()
         lastScrollEvent?.index?.let { index ->
             val first = lazyColumnState.layoutInfo.visibleItemsInfo.minBy { it.index }.index
             val end = lazyColumnState.layoutInfo.visibleItemsInfo.maxBy { it.index }.index
@@ -88,14 +90,6 @@ fun TextEditor(
                                 editableController.selectField(targetIndex = index)
                             }
                     ) {
-                        DisposableEffect(Unit) {
-                            onDispose {
-                                if (!textEditorState.isMultipleSelectionMode) {
-                                    editableController.clearSelectedIndex(index)
-                                }
-                            }
-                        }
-
                         TextField(
                             textFieldState = textFieldState,
                             enabled = !textEditorState.isMultipleSelectionMode,
@@ -131,7 +125,6 @@ fun TextEditor(
                                 editableController.selectNextField()
                                 if (index != textEditorState.fields.lastIndex) lastScrollEvent = ScrollEvent(index + 1)
                             },
-                            scrollEvent = if (lastScrollEvent?.index == index) lastScrollEvent else null
                         )
                     }
                 }

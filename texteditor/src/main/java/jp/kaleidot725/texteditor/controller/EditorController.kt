@@ -36,11 +36,14 @@ internal class EditorController(
     }
 
     fun syncState(state: TextEditorState) {
-        _isMultipleSelectionMode = state.isMultipleSelectionMode
-        _selectedIndices.clear()
-        _selectedIndices.addAll(state.selectedIndices)
-        _fields.clear()
-        _fields.addAll(state.fields)
+        lock.withLock {
+            _isMultipleSelectionMode = state.isMultipleSelectionMode
+            _selectedIndices.clear()
+            _selectedIndices.addAll(state.selectedIndices)
+
+            _fields.clear()
+            _fields.addAll(state.fields)
+        }
     }
 
     fun splitNewLine(targetIndex: Int, textFieldValue: TextFieldValue) {
@@ -58,12 +61,12 @@ internal class EditorController(
             _fields[targetIndex] =
                 _fields[targetIndex].copy(value = firstSplitFieldValue, isSelected = false)
 
-            val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.lastIndex)
+            val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
             val newSplitFieldStates =
                 newSplitFieldValues.map { TextFieldState(value = it, isSelected = false) }
             _fields.addAll(targetIndex + 1, newSplitFieldStates)
 
-            val lastNewSplitFieldIndex = targetIndex + splitFieldValues.lastIndex
+            val lastNewSplitFieldIndex = targetIndex + newSplitFieldValues.count()
             selectFieldInternal(lastNewSplitFieldIndex)
             onChanged(state)
         }

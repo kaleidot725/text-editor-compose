@@ -37,13 +37,11 @@ internal fun TextField(
     onUpFocus: () -> Unit,
     onDownFocus: () -> Unit,
     modifier: Modifier = Modifier,
-    scrollEvent: ScrollEvent? = null
 ) {
     val currentTextField by rememberUpdatedState(newValue = textFieldState.value)
 
     LaunchedEffect(textFieldState.isSelected) {
         if (textFieldState.isSelected) {
-            scrollEvent?.consume()
             focusRequester.requestFocus()
         }
     }

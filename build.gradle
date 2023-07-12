@@ -3,7 +3,7 @@ buildscript {
         core_ktx_version = '1.9.0'
         lifecycle_ktx_version = '2.5.1'
         activity_compose_version = '1.6.0'
-        compose_ui_version = '1.4.1'
+        compose_ui_version = '1.4.3'
         kotest_version = '5.3.1'
     }
 }

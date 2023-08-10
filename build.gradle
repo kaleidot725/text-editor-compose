@@ -3,7 +3,7 @@ buildscript {
         core_ktx_version = '1.9.0'
         lifecycle_ktx_version = '2.5.1'
         activity_compose_version = '1.6.0'
-        compose_ui_version = '1.4.3'
+        compose_ui_version = '1.5.0'
         kotest_version = '5.3.1'
     }
 }
@@ -11,7 +11,7 @@ buildscript {
 plugins {
     id 'com.android.application' version '7.4.2' apply false
     id 'com.android.library' version '7.4.2' apply false
-    id 'org.jetbrains.kotlin.android' version '1.8.10' apply false
+    id 'org.jetbrains.kotlin.android' version '1.9.0' apply false
     id 'org.jlleitschuh.gradle.ktlint' version '10.3.0'
 }
 

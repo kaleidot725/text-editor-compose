@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,6 +22,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import jp.kaleidot725.texteditor.controller.rememberTextEditorController
 import jp.kaleidot725.texteditor.state.TextEditorState
@@ -29,6 +33,11 @@ typealias DecorationBoxComposable = @Composable (
     isSelected: Boolean,
     innerTextField: @Composable (modifier: Modifier) -> Unit
 ) -> Unit
+
+val customTextSelectionColors = TextSelectionColors(
+    handleColor = Color.Transparent,
+    backgroundColor = Color.Transparent,
+)
 
 @Composable
 fun TextEditor(
@@ -59,91 +68,95 @@ fun TextEditor(
         }
     }
 
-    LazyColumn(
-        state = lazyColumnState,
-        modifier = modifier,
-        contentPadding = contentPaddingValues
+    CompositionLocalProvider(
+        LocalTextSelectionColors provides customTextSelectionColors,
     ) {
-        itemsIndexed(
-            items = textEditorState.fields,
-            key = { _, item -> item.id }
-        ) { index, textFieldState ->
-            val focusRequester by remember { mutableStateOf(FocusRequester()) }
+        LazyColumn(
+            state = lazyColumnState,
+            modifier = modifier,
+            contentPadding = contentPaddingValues
+        ) {
+            itemsIndexed(
+                items = textEditorState.fields,
+                key = { _, item -> item.id }
+            ) { index, textFieldState ->
+                val focusRequester by remember { mutableStateOf(FocusRequester()) }
 
-            DisposableEffect(Unit) {
-                focusRequesters[index] = focusRequester
-                onDispose {
-                    focusRequesters.remove(index)
-                }
-            }
-
-            decorationBox(
-                index = index,
-                isSelected = textFieldState.isSelected,
-                innerTextField = { modifier ->
-                    Box(
-                        modifier = modifier
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) {
-                                if (!textEditorState.isMultipleSelectionMode) return@clickable
-                                editableController.selectField(targetIndex = index)
-                            }
-                    ) {
-                        TextField(
-                            textFieldState = textFieldState,
-                            enabled = !textEditorState.isMultipleSelectionMode,
-                            focusRequester = focusRequester,
-                            onUpdateText = { newText ->
-                                editableController.updateField(
-                                    targetIndex = index,
-                                    textFieldValue = newText
-                                )
-                            },
-                            onContainNewLine = { newText ->
-                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
-                                editableController.splitNewLine(
-                                    targetIndex = index,
-                                    textFieldValue = newText
-                                )
-                                lastScrollEvent = ScrollEvent(index + 1)
-                            },
-                            onAddNewLine = { newText ->
-                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
-                                editableController.splitAtCursor(
-                                    targetIndex = index,
-                                    textFieldValue = newText
-                                )
-                                lastScrollEvent = ScrollEvent(index + 1)
-                            },
-                            onDeleteNewLine = {
-                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
-                                editableController.deleteField(targetIndex = index)
-                                if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
-                            },
-                            onFocus = {
-                                editableController.selectField(index)
-                            },
-                            onUpFocus = {
-                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
-                                editableController.selectPreviousField()
-                                if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
-                            },
-                            onDownFocus = {
-                                if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
-                                editableController.selectNextField()
-                                if (index != textEditorState.fields.lastIndex) lastScrollEvent =
-                                    ScrollEvent(index + 1)
-                            },
-                        )
+                DisposableEffect(Unit) {
+                    focusRequesters[index] = focusRequester
+                    onDispose {
+                        focusRequesters.remove(index)
                     }
                 }
-            )
-        }
 
-        item {
-            Spacer(modifier = Modifier.height(100.dp))
+                decorationBox(
+                    index = index,
+                    isSelected = textFieldState.isSelected,
+                    innerTextField = { modifier ->
+                        Box(
+                            modifier = modifier
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    if (!textEditorState.isMultipleSelectionMode) return@clickable
+                                    editableController.selectField(targetIndex = index)
+                                }
+                        ) {
+                            TextField(
+                                textFieldState = textFieldState,
+                                enabled = !textEditorState.isMultipleSelectionMode,
+                                focusRequester = focusRequester,
+                                onUpdateText = { newText ->
+                                    editableController.updateField(
+                                        targetIndex = index,
+                                        textFieldValue = newText
+                                    )
+                                },
+                                onContainNewLine = { newText ->
+                                    if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                    editableController.splitNewLine(
+                                        targetIndex = index,
+                                        textFieldValue = newText
+                                    )
+                                    lastScrollEvent = ScrollEvent(index + 1)
+                                },
+                                onAddNewLine = { newText ->
+                                    if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                    editableController.splitAtCursor(
+                                        targetIndex = index,
+                                        textFieldValue = newText
+                                    )
+                                    lastScrollEvent = ScrollEvent(index + 1)
+                                },
+                                onDeleteNewLine = {
+                                    if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                    editableController.deleteField(targetIndex = index)
+                                    if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
+                                },
+                                onFocus = {
+                                    editableController.selectField(index)
+                                },
+                                onUpFocus = {
+                                    if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                    editableController.selectPreviousField()
+                                    if (index != 0) lastScrollEvent = ScrollEvent(index - 1)
+                                },
+                                onDownFocus = {
+                                    if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
+                                    editableController.selectNextField()
+                                    if (index != textEditorState.fields.lastIndex) lastScrollEvent =
+                                        ScrollEvent(index + 1)
+                                },
+                            )
+                        }
+                    }
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(100.dp))
+            }
         }
     }
 }

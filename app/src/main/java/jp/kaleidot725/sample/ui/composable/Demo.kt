@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -25,12 +24,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import jp.kaleidot725.sample.ui.extension.createCancelledState
 import jp.kaleidot725.sample.ui.extension.createCopiedState
@@ -48,7 +51,8 @@ fun Demo(text: String) {
 
     var textEditorState by remember { mutableStateOf(TextEditorState.create(text)) }
     val bottomPadding = if (textEditorState.isMultipleSelectionMode) 100.dp else 0.dp
-    val contentBottomPaddingValue = with(LocalDensity.current) { WindowInsets.ime.getBottom(this).toDp() }
+    val contentBottomPaddingValue =
+        with(LocalDensity.current) { WindowInsets.ime.getBottom(this).toDp() }
     val contentPaddingValues = PaddingValues(bottom = contentBottomPaddingValue)
 
     Box(
@@ -68,6 +72,7 @@ fun Demo(text: String) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(getBackgroundColor(isSelected))
+                    .bottomBorder(strokeWidth = 1.dp, color = Color.LightGray.copy(alpha = 0.5f))
             ) {
                 // TextLine Number
                 Text(
@@ -131,6 +136,25 @@ private fun getLineNumber(index: Int): String {
 private fun getBackgroundColor(isSelected: Boolean): Color {
     return if (isSelected) Color(0x806456A5) else Color.White
 }
+
+private fun Modifier.bottomBorder(strokeWidth: Dp, color: Color) = composed(
+    factory = {
+        val density = LocalDensity.current
+        val strokeWidthPx = density.run { strokeWidth.toPx() }
+
+        Modifier.drawBehind {
+            val width = size.width
+            val height = size.height - strokeWidthPx / 2
+
+            drawLine(
+                color = color,
+                start = Offset(x = 0f, y = height),
+                end = Offset(x = width, y = height),
+                strokeWidth = strokeWidthPx
+            )
+        }
+    }
+)
 
 @Preview
 @Composable

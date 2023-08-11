@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -40,7 +39,9 @@ fun TextEditor(
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
     val textEditorState by rememberUpdatedState(newValue = textEditorState)
-    val editableController by rememberTextEditorController(textEditorState, onChanged = { onChanged(it) })
+    val editableController by rememberTextEditorController(
+        textEditorState,
+        onChanged = { onChanged(it) })
     var lastScrollEvent by remember { mutableStateOf(null as ScrollEvent?) }
     val lazyColumnState = rememberLazyListState()
     val focusRequesters by remember { mutableStateOf(mutableMapOf<Int, FocusRequester>()) }
@@ -95,16 +96,25 @@ fun TextEditor(
                             enabled = !textEditorState.isMultipleSelectionMode,
                             focusRequester = focusRequester,
                             onUpdateText = { newText ->
-                                editableController.updateField(targetIndex = index, textFieldValue = newText)
+                                editableController.updateField(
+                                    targetIndex = index,
+                                    textFieldValue = newText
+                                )
                             },
                             onContainNewLine = { newText ->
                                 if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
-                                editableController.splitNewLine(targetIndex = index, textFieldValue = newText)
+                                editableController.splitNewLine(
+                                    targetIndex = index,
+                                    textFieldValue = newText
+                                )
                                 lastScrollEvent = ScrollEvent(index + 1)
                             },
                             onAddNewLine = { newText ->
                                 if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
-                                editableController.splitAtCursor(targetIndex = index, textFieldValue = newText)
+                                editableController.splitAtCursor(
+                                    targetIndex = index,
+                                    textFieldValue = newText
+                                )
                                 lastScrollEvent = ScrollEvent(index + 1)
                             },
                             onDeleteNewLine = {
@@ -123,7 +133,8 @@ fun TextEditor(
                             onDownFocus = {
                                 if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
                                 editableController.selectNextField()
-                                if (index != textEditorState.fields.lastIndex) lastScrollEvent = ScrollEvent(index + 1)
+                                if (index != textEditorState.fields.lastIndex) lastScrollEvent =
+                                    ScrollEvent(index + 1)
                             },
                         )
                     }

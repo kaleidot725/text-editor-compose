@@ -4,6 +4,7 @@ import android.view.KeyEvent.KEYCODE_DEL
 import android.view.KeyEvent.KEYCODE_DPAD_DOWN
 import android.view.KeyEvent.KEYCODE_DPAD_UP
 import android.view.KeyEvent.KEYCODE_ENTER
+import android.view.KeyEvent.KEYCODE_TAB
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicTextField
@@ -75,6 +76,9 @@ internal fun TextField(
                 val b4 = onPreviewEnterKeyEvent(event) { onAddNewLine(currentTextField) }
                 if (b4) return@onPreviewKeyEvent true
 
+                val b5 = onPreviewTabKeyEvent(event) { onDownFocus() }
+                if (b5) return@onPreviewKeyEvent true
+
                 false
             }
     )
@@ -129,6 +133,20 @@ private fun onPreviewDownKeyEvent(
 
     val isEmpty = value.selection == TextRange(value.text.count())
     if (!isEmpty) return false
+
+    invoke()
+    return true
+}
+
+private fun onPreviewTabKeyEvent(
+    event: KeyEvent,
+    invoke: () -> Unit
+): Boolean {
+    val isKeyDown = event.type == KeyEventType.KeyDown
+    if (!isKeyDown) return false
+
+    val isTabKey = event.nativeKeyEvent.keyCode == KEYCODE_TAB
+    if (!isTabKey) return false
 
     invoke()
     return true

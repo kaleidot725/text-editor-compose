@@ -12,7 +12,8 @@
 </h3>
 
 <h3 align="center">
-    <img align="center" width=400 src="https://github.com/kaleidot725/text-editor-compose/blob/main/demo.gif">
+    <img align="center" width=400 src="https://github.com/kaleidot725/text-editor-compose/assets/23740796/562adb08-dd15-4851-ac12-dee31893f142"
+">
 </h3>
 
 ## ✨Features

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import jp.kaleidot725.texteditor.state.TextEditorState
 import jp.kaleidot725.texteditor.state.TextFieldState
@@ -12,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 internal class EditorController(
-    textEditorState: TextEditorState
+    val textEditorState: TextEditorState
 ) {
     private var onChanged: (TextEditorState) -> Unit = {}
 
@@ -26,7 +27,7 @@ internal class EditorController(
     val selectedIndices get() = _selectedIndices.toList()
 
     private val state: TextEditorState
-        get() = TextEditorState(fields, selectedIndices, isMultipleSelectionMode)
+        get() = TextEditorState(fields, selectedIndices, isMultipleSelectionMode, textEditorState.textStyle, textEditorState.textSelectedStyle)
 
     private val lock = ReentrantLock()
 
@@ -62,7 +63,7 @@ internal class EditorController(
 
             val newSplitFieldValues = splitFieldValues.subList(1, splitFieldValues.count())
             val newSplitFieldStates =
-                newSplitFieldValues.map { TextFieldState(value = it, isSelected = false) }
+                newSplitFieldValues.map { TextFieldState(value = it, isSelected = false, textStyle = textEditorState.textStyle, textSelectedStyle = textEditorState.textSelectedStyle) }
             _fields.addAll(targetIndex + 1, newSplitFieldStates)
 
             val lastNewSplitFieldIndex = targetIndex + newSplitFieldValues.count()
@@ -95,7 +96,7 @@ internal class EditorController(
             _fields[targetIndex] = firstState
 
             val secondValue = TextFieldValue(second, TextRange.Zero)
-            val secondState = TextFieldState(value = secondValue, isSelected = false)
+            val secondState = TextFieldState(value = secondValue, isSelected = false, textStyle = textEditorState.textStyle, textSelectedStyle = textEditorState.textSelectedStyle)
             _fields.add(targetIndex + 1, secondState)
 
             selectFieldInternal(targetIndex + 1)
@@ -214,7 +215,7 @@ internal class EditorController(
     fun deleteAllLine() {
         lock.withLock {
             _fields.clear()
-            _fields.addAll(emptyList<String>().createInitTextFieldStates())
+            _fields.addAll(emptyList<String>().createInitTextFieldStates(textEditorState.textStyle, textEditorState.textSelectedStyle))
             _selectedIndices.clear()
             selectFieldInternal(0)
             onChanged(state)
@@ -302,12 +303,14 @@ internal class EditorController(
     }
 
     companion object {
-        fun List<String>.createInitTextFieldStates(): List<TextFieldState> {
-            if (this.isEmpty()) return listOf(TextFieldState(isSelected = false))
+        fun List<String>.createInitTextFieldStates(textStyle: TextStyle, textSelectedStyle: TextStyle): List<TextFieldState> {
+            if (this.isEmpty()) return listOf(TextFieldState(isSelected = false, textStyle = textStyle, textSelectedStyle = textSelectedStyle))
             return this.mapIndexed { _, s ->
                 TextFieldState(
                     value = TextFieldValue(s, TextRange.Zero),
-                    isSelected = false
+                    isSelected = false,
+                    textStyle = textStyle,
+                    textSelectedStyle = textSelectedStyle
                 )
             }
         }

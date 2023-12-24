@@ -31,7 +31,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = '17'
     }
 
     android.testOptions {
@@ -45,7 +45,13 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion '1.5.1'
+        kotlinCompilerExtensionVersion '1.5.4'
+    }
+    publishing{
+        singleVariant('release') {
+            withSourcesJar()
+            withJavadocJar()
+        }
     }
 }
 
@@ -64,7 +70,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.kaleidot725'
                 artifactId = 'text-editor-compose'
-                version = '0.6.0'
+                version = '0.6.1'
             }
         }
     }

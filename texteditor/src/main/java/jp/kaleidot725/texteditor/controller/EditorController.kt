@@ -303,8 +303,8 @@ internal class EditorController(
     }
 
     companion object {
-        fun List<String>.createInitTextFieldStates(textStyle:TextStyle,textSelectedStyle:TextStyle): List<TextFieldState> {
-            if (this.isEmpty()) return listOf(TextFieldState(isSelected = false,textStyle = textStyle, textSelectedStyle = textSelectedStyle))
+        fun List<String>.createInitTextFieldStates(textStyle: TextStyle, textSelectedStyle: TextStyle): List<TextFieldState> {
+            if (this.isEmpty()) return listOf(TextFieldState(isSelected = false, textStyle = textStyle, textSelectedStyle = textSelectedStyle))
             return this.mapIndexed { _, s ->
                 TextFieldState(
                     value = TextFieldValue(s, TextRange.Zero),

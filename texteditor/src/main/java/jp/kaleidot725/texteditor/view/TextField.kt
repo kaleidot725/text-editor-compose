@@ -8,15 +8,10 @@ import android.view.KeyEvent.KEYCODE_TAB
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.selection.LocalTextSelectionColors
-import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
@@ -24,14 +19,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusTarget
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import jp.kaleidot725.texteditor.state.TextFieldState
 
@@ -50,11 +42,12 @@ internal fun TextField(
     modifier: Modifier = Modifier,
 ) {
     val currentTextField by rememberUpdatedState(newValue = textFieldState.value)
-    val textStyle by remember(textFieldState.isSelected){
-        derivedStateOf{
-        if(textFieldState.isSelected) textFieldState.textSelectedStyle
-        else textFieldState.textStyle
-    }}
+    val textStyle by remember(textFieldState.isSelected) {
+        derivedStateOf {
+            if (textFieldState.isSelected) textFieldState.textSelectedStyle
+            else textFieldState.textStyle
+        }
+    }
 
     LaunchedEffect(textFieldState.isSelected) {
         if (textFieldState.isSelected) {

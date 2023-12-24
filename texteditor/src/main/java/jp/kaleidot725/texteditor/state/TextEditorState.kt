@@ -29,7 +29,7 @@ data class TextEditorState(
     companion object {
         fun create(text: String, textStyle: TextStyle = TextStyle(), textSelectedStyle: TextStyle = TextStyle()): TextEditorState {
             return TextEditorState(
-                fields = text.lines().createInitTextFieldStates(textStyle,textSelectedStyle),
+                fields = text.lines().createInitTextFieldStates(textStyle, textSelectedStyle),
                 selectedIndices = listOf(-1),
                 isMultipleSelectionMode = false,
                 textStyle = textStyle,
@@ -39,7 +39,7 @@ data class TextEditorState(
 
         fun create(lines: List<String>, textStyle: TextStyle = TextStyle(), textSelectedStyle: TextStyle = TextStyle()): TextEditorState {
             return TextEditorState(
-                fields = lines.createInitTextFieldStates(textStyle,textSelectedStyle),
+                fields = lines.createInitTextFieldStates(textStyle, textSelectedStyle),
                 selectedIndices = listOf(-1),
                 isMultipleSelectionMode = false,
                 textStyle = textStyle,

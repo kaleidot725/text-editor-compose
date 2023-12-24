@@ -16,6 +16,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -47,15 +48,16 @@ fun TextEditor(
     contentPaddingValues: PaddingValues = PaddingValues(),
     decorationBox: DecorationBoxComposable = { _, _, innerTextField -> innerTextField(Modifier) },
 ) {
-    val textEditorState by rememberUpdatedState(newValue = textEditorState)
+    val textEditorStateM by rememberUpdatedState(newValue = textEditorState)
     val editableController by rememberTextEditorController(
-        textEditorState,
-        onChanged = { onChanged(it) })
+        textEditorStateM,
+        onChanged = { onChanged(it) }
+    )
     var lastScrollEvent by remember { mutableStateOf(null as ScrollEvent?) }
     val lazyColumnState = rememberLazyListState()
-    val focusRequesters by remember { mutableStateOf(mutableMapOf<Int, FocusRequester>()) }
+    val focusRequesters = remember { mutableStateMapOf<Int, FocusRequester>() }
 
-    editableController.syncState(textEditorState)
+    editableController.syncState(textEditorStateM)
 
     LaunchedEffect(lastScrollEvent) {
         lastScrollEvent?.consume()
@@ -77,7 +79,7 @@ fun TextEditor(
             contentPadding = contentPaddingValues
         ) {
             itemsIndexed(
-                items = textEditorState.fields,
+                items = textEditorStateM.fields,
                 key = { _, item -> item.id }
             ) { index, textFieldState ->
                 val focusRequester by remember { mutableStateOf(FocusRequester()) }
@@ -99,13 +101,13 @@ fun TextEditor(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null
                                 ) {
-                                    if (!textEditorState.isMultipleSelectionMode) return@clickable
+                                    if (!textEditorStateM.isMultipleSelectionMode) return@clickable
                                     editableController.selectField(targetIndex = index)
                                 }
                         ) {
                             TextField(
                                 textFieldState = textFieldState,
-                                enabled = !textEditorState.isMultipleSelectionMode,
+                                enabled = !textEditorStateM.isMultipleSelectionMode,
                                 focusRequester = focusRequester,
                                 onUpdateText = { newText ->
                                     editableController.updateField(
@@ -145,7 +147,7 @@ fun TextEditor(
                                 onDownFocus = {
                                     if (lastScrollEvent != null && lastScrollEvent?.isConsumed != true) return@TextField
                                     editableController.selectNextField()
-                                    if (index != textEditorState.fields.lastIndex) lastScrollEvent =
+                                    if (index != textEditorStateM.fields.lastIndex) lastScrollEvent =
                                         ScrollEvent(index + 1)
                                 }
                             )

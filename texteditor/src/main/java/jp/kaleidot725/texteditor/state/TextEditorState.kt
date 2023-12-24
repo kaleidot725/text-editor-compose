@@ -1,6 +1,7 @@
 package jp.kaleidot725.texteditor.state
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.text.TextStyle
 import jp.kaleidot725.texteditor.controller.EditorController.Companion.createInitTextFieldStates
 
 @Immutable
@@ -8,6 +9,8 @@ data class TextEditorState(
     val fields: List<TextFieldState>,
     val selectedIndices: List<Int>,
     val isMultipleSelectionMode: Boolean,
+    val textStyle: TextStyle,
+    val textSelectedStyle: TextStyle
 ) {
     fun getAllText(): String {
         return fields.map { it.value.text }.foldIndexed("") { index, acc, s ->
@@ -24,19 +27,23 @@ data class TextEditorState(
     }
 
     companion object {
-        fun create(text: String): TextEditorState {
+        fun create(text: String, textStyle: TextStyle = TextStyle(), textSelectedStyle: TextStyle = TextStyle()): TextEditorState {
             return TextEditorState(
-                fields = text.lines().createInitTextFieldStates(),
+                fields = text.lines().createInitTextFieldStates(textStyle,textSelectedStyle),
                 selectedIndices = listOf(-1),
-                isMultipleSelectionMode = false
+                isMultipleSelectionMode = false,
+                textStyle = textStyle,
+                textSelectedStyle = textSelectedStyle
             )
         }
 
-        fun create(lines: List<String>): TextEditorState {
+        fun create(lines: List<String>, textStyle: TextStyle = TextStyle(), textSelectedStyle: TextStyle = TextStyle()): TextEditorState {
             return TextEditorState(
-                fields = lines.createInitTextFieldStates(),
+                fields = lines.createInitTextFieldStates(textStyle,textSelectedStyle),
                 selectedIndices = listOf(-1),
-                isMultipleSelectionMode = false
+                isMultipleSelectionMode = false,
+                textStyle = textStyle,
+                textSelectedStyle = textSelectedStyle
             )
         }
     }

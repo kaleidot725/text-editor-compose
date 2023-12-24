@@ -14,7 +14,10 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -28,6 +31,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import jp.kaleidot725.texteditor.state.TextFieldState
 
@@ -46,6 +50,11 @@ internal fun TextField(
     modifier: Modifier = Modifier,
 ) {
     val currentTextField by rememberUpdatedState(newValue = textFieldState.value)
+    val textStyle by remember(textFieldState.isSelected){
+        derivedStateOf{
+        if(textFieldState.isSelected) textFieldState.textSelectedStyle
+        else textFieldState.textStyle
+    }}
 
     LaunchedEffect(textFieldState.isSelected) {
         if (textFieldState.isSelected) {
@@ -86,7 +95,8 @@ internal fun TextField(
                 if (b5) return@onPreviewKeyEvent true
 
                 false
-            }
+            },
+        textStyle = textStyle
     )
 }
 

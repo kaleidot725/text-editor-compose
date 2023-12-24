@@ -147,7 +147,7 @@ fun TextEditor(
                                     editableController.selectNextField()
                                     if (index != textEditorState.fields.lastIndex) lastScrollEvent =
                                         ScrollEvent(index + 1)
-                                },
+                                }
                             )
                         }
                     }

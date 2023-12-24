@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -49,7 +50,8 @@ fun Demo(text: String) {
     val clipboardManager = LocalClipboardManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    var textEditorState by remember { mutableStateOf(TextEditorState.create(text)) }
+    var textEditorState by remember { mutableStateOf(TextEditorState.create(text,
+        TextStyle(color=Color.Black), TextStyle(color=Color.Green))) }
     val bottomPadding = if (textEditorState.isMultipleSelectionMode) 100.dp else 0.dp
     val contentBottomPaddingValue =
         with(LocalDensity.current) { WindowInsets.ime.getBottom(this).toDp() }
